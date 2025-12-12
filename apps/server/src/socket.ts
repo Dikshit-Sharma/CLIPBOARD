@@ -7,7 +7,6 @@ import { nanoid } from 'nanoid'
 let ioRef: Server | null = null
 
 const presenceByClipboard = new Map<string, Map<string, { id: string; connectedAt: string }>>()
-// Track pending content updates for debouncing
 const pendingContentUpdates = new Map<string, Map<string, { html: string; timer: NodeJS.Timeout }>>()
 
 function nowIso() {
@@ -15,11 +14,13 @@ function nowIso() {
 }
 
 export function attachSocket(server: http.Server) {
-  const webOrigin = process.env.WEB_ORIGIN || 'http://localhost:5173'
+  // 🔥 Allow ALL origins for Socket.IO
   const io = new Server(server, {
     cors: {
-      origin: webOrigin,
-      credentials: true
+      origin: true,          // reflect the request origin
+      credentials: true,     // allow cookies / auth headers
+      methods: ['GET', 'POST'],
+      allowedHeaders: ['Content-Type', 'Authorization']
     }
   })
 
@@ -50,7 +51,7 @@ export function attachSocket(server: http.Server) {
         socket.data.clipboardId = payload.clipboardId
         socket.data.role = session.role
 
-        // Presence
+        // Presence handling
         const existing = presenceByClipboard.get(payload.clipboardId) || new Map()
         existing.set(socket.id, { id: socket.id, connectedAt: nowIso() })
         presenceByClipboard.set(payload.clipboardId, existing)
@@ -69,27 +70,20 @@ export function attachSocket(server: http.Server) {
           if (socket.data.role !== 'write') return
 
           const clipboardId = payload.clipboardId
-
-          // Get or create pending updates map for this clipboard
           let clipboardPending = pendingContentUpdates.get(clipboardId)
           if (!clipboardPending) {
             clipboardPending = new Map()
             pendingContentUpdates.set(clipboardId, clipboardPending)
           }
 
-          // Clear existing pending update for this socket
           const existing = clipboardPending.get(socket.id)
-          if (existing) {
-            clearTimeout(existing.timer)
-          }
+          if (existing) clearTimeout(existing.timer)
 
-          // Emit immediately for real-time UI updates
           io.to(room).emit('clipboard:content:updated', {
             html: msg.html,
             contentUpdatedAt: nowIso()
           })
 
-          // Debounce the Firestore write (500ms delay)
           const timer = setTimeout(async () => {
             try {
               const cb2 = await getClipboard(clipboardId)
@@ -109,7 +103,6 @@ export function attachSocket(server: http.Server) {
                 activity: [newActivity, ...cb2.activity]
               })
 
-              // Update the emitted timestamp with actual write time
               io.to(room).emit('clipboard:content:updated', {
                 html: msg.html,
                 contentUpdatedAt
@@ -118,12 +111,12 @@ export function attachSocket(server: http.Server) {
               console.error('Failed to update clipboard:', error)
               socket.emit('clipboard:error', { message: 'Failed to save changes' })
             } finally {
-              clipboardPending.delete(socket.id)
-              if (clipboardPending.size === 0) {
+              clipboardPending!.delete(socket.id)
+              if (clipboardPending!.size === 0) {
                 pendingContentUpdates.delete(clipboardId)
               }
             }
-          }, 500) // 500ms debounce
+          }, 500)
 
           clipboardPending.set(socket.id, { html: msg.html, timer })
         })
@@ -136,7 +129,6 @@ export function attachSocket(server: http.Server) {
       const clipboardId = socket.data.clipboardId as string | undefined
       if (!clipboardId) return
 
-      // Clean up presence
       const map = presenceByClipboard.get(clipboardId)
       if (map) {
         map.delete(socket.id)
@@ -144,13 +136,11 @@ export function attachSocket(server: http.Server) {
         io.to(room).emit('presence:update', { users: Array.from(map.values()) })
       }
 
-      // Flush any pending content updates for this socket
       const clipboardPending = pendingContentUpdates.get(clipboardId)
       if (clipboardPending) {
         const pending = clipboardPending.get(socket.id)
         if (pending) {
           clearTimeout(pending.timer)
-          // Trigger immediate write
           getClipboard(clipboardId)
             .then((cb2) => {
               if (!cb2) return
@@ -179,8 +169,6 @@ export function attachSocket(server: http.Server) {
     })
   })
 
-  // Cleanup expired clipboards periodically (in-memory presence only)
-  // Note: Firestore TTL policies should handle actual deletion
   setInterval(async () => {
     try {
       const now = Date.now()
