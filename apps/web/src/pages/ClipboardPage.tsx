@@ -5,7 +5,7 @@ import { AlertTriangle, ArrowLeft, Copy, Link2, Lock, Settings, Share2 } from 'l
 import { Button, Card, Input, Modal } from '../components/ui'
 import { ApiError, authClipboard, getClipboardMeta, updateClipboardSettings } from '../services/api'
 import { createClipboardSocket, type PresenceUser } from '../services/realtime'
-import type { ClipboardActivity, ClipboardSettings, ClipboardState, ClipboardRole } from '../types'
+import type { ClipboardSettings, ClipboardState, ClipboardRole, ClipboardActivity } from '../types'
 import { RichEditor } from '../components/RichEditor'
 import { ActivityFeed } from '../components/ActivityFeed'
 import { PresenceBar } from '../components/PresenceBar'
@@ -96,7 +96,9 @@ export function ClipboardPage() {
             id: cached.id,
             contentHtml: cached.contentHtml,
             contentUpdatedAt: cached.contentUpdatedAt,
-            activity: cached.activity,
+            // defensive cast: cached may originate from older versions and activity items sometimes
+            // contain generic string types; the types.ts now accepts string-based activity.type.
+            activity: (cached.activity as ClipboardActivity[]) || [],
             settings: cached.settings as ClipboardSettings
           })
         }
