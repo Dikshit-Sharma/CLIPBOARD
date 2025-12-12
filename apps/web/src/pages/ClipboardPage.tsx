@@ -404,5 +404,9 @@ function SettingsModal(props: {
         </div>
       </div>
     </Modal>
+    <footer className="mt-10 text-center text-xs text-text-muted">
+      This project is developed by Dikshit Sharma.
+    </footer>
+
   )
 }
