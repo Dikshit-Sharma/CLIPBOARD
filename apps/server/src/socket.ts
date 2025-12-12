@@ -15,19 +15,22 @@ function nowIso() {
 
 export function attachSocket(server: http.Server) {
   const io = new Server(server, {
-    cors: {
-      origin: true,
-      credentials: true,
-      methods: ['GET', 'POST'],
-      allowedHeaders: ['Content-Type', 'Authorization']
-    },
+  cors: {
+    origin: true,
+    credentials: true,
+    methods: ["GET", "POST"],
+    allowedHeaders: ["Content-Type", "Authorization"]
+  },
 
-    // 🔥 MAKE CITRIX COMPATIBLE
-    transports: ['polling', 'websocket'],     
-    allowEIO3: true,                            // support older enterprise proxies
-    pingTimeout: 30000,
-    pingInterval: 25000
-  })
+  // 🔥 CITRIX-FRIENDLY SETTINGS
+  transports: ["polling"],       // <-- MUST BE ONLY POLLING
+  allowUpgrades: false,          // <-- Disable WebSocket upgrade
+  pingInterval: 20000,
+  pingTimeout: 60000,
+
+  allowEIO3: true                // enterprise proxy compatibility
+});
+
 
   ioRef = io
 
