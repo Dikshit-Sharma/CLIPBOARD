@@ -113,6 +113,7 @@ fly secrets set FIREBASE_SERVICE_ACCOUNT="$(cat path/to/service-account.json)"
 fly deploy
 ```
 
+
 ## Step 3: Deploy Frontend to Netlify
 
 ### 3.1 Via Netlify Dashboard
