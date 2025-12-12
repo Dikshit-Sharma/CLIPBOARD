@@ -355,6 +355,7 @@ function SettingsModal(props: {
   const [removePassword, setRemovePassword] = useState(false)
 
   return (
+  <>
     <Modal open={props.open} title="Clipboard settings" onClose={props.onClose}>
       <div className="space-y-4">
         <label className="space-y-1">
@@ -376,10 +377,18 @@ function SettingsModal(props: {
             <div className="text-xs text-text-muted">{props.protected ? 'Enabled' : 'Not set'}</div>
           </div>
           <div className="mt-2 space-y-2">
-            <Input value={password} onChange={(e) => setPassword(e.target.value)} placeholder="New password (leave empty to keep)" />
+            <Input
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="New password (leave empty to keep)"
+            />
             {props.protected ? (
               <label className="flex items-center gap-2 text-xs text-text-muted">
-                <input type="checkbox" checked={removePassword} onChange={(e) => setRemovePassword(e.target.checked)} />
+                <input
+                  type="checkbox"
+                  checked={removePassword}
+                  onChange={(e) => setRemovePassword(e.target.checked)}
+                />
                 Remove password
               </label>
             ) : null}
@@ -394,7 +403,11 @@ function SettingsModal(props: {
             onClick={() =>
               props.onSave({
                 expiresIn,
-                password: removePassword ? null : password.trim() ? password.trim() : undefined
+                password: removePassword
+                  ? null
+                  : password.trim()
+                  ? password.trim()
+                  : undefined
               })
             }
             disabled={props.busy}
@@ -404,9 +417,9 @@ function SettingsModal(props: {
         </div>
       </div>
     </Modal>
+
     <footer className="mt-10 text-center text-xs text-text-muted">
       This project is developed by Dikshit Sharma.
     </footer>
-
-  )
-}
+  </>
+)
