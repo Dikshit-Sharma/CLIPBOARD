@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji",
+    "Segoe UI Emoji";
+}
+
+html,
+body {
+  height: 100%;
+}
+
+/* Tiptap editor styling */
+.tiptap {
+  min-height: 18rem;
+  outline: none;
+}
+
+.tiptap p {
+  margin: 0.25rem 0;
+}
+
+.tiptap pre {
+  background: #0b1220;
+  border: 1px solid #22304b;
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+  overflow-x: auto;
+}
+
+.tiptap code {
+  background: rgba(96, 165, 250, 0.15);
+  border-radius: 0.375rem;
+  padding: 0.1rem 0.25rem;
+}
+
+/* Slightly nicer scrollbars on supported browsers */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #263244 transparent;
+}

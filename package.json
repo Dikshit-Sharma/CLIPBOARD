@@ -1,0 +1,21 @@
+{
+  "name": "sharedclip",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -n web,server -c cyan,magenta \"npm run dev --prefix apps/web\" \"npm run dev --prefix apps/server\"",
+    "build": "npm run build --prefix apps/server && npm run build --prefix apps/web",
+    "test": "npm run test --prefix apps/server && npm run test --prefix apps/web && npm run test:e2e",
+    "test:e2e": "playwright test",
+    "lint": "npm run lint --prefix apps/web && npm run lint --prefix apps/server",
+    "format": "prettier -w ."
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0",
+    "concurrently": "^9.2.0",
+    "prettier": "^3.6.2"
+  }
+}
