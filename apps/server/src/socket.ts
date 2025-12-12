@@ -6,19 +6,27 @@ import { nanoid } from 'nanoid'
 
 let ioRef: Server | null = null
 
-const presenceByClipboard = new Map<string, Map<string, { id: string; connectedAt: string }>>()
-const pendingContentUpdates = new Map<string, Map<string, { html: string; timer: NodeJS.Timeout }>>()
+// Track connected users
+const presenceByClipboard = new Map<
+  string,
+  Map<string, { id: string; connectedAt: string }>
+>()
+
+// Track debounced content saves
+const pendingContentUpdates = new Map<
+  string,
+  Map<string, { html: string; timer: NodeJS.Timeout }>
+>()
 
 function nowIso() {
   return new Date().toISOString()
 }
 
 export function attachSocket(server: http.Server) {
-  // 🔥 Allow ALL origins for Socket.IO
   const io = new Server(server, {
     cors: {
-      origin: true,          // reflect the request origin
-      credentials: true,     // allow cookies / auth headers
+      origin: true, // allow all origins
+      credentials: true,
       methods: ['GET', 'POST'],
       allowedHeaders: ['Content-Type', 'Authorization']
     }
@@ -27,140 +35,162 @@ export function attachSocket(server: http.Server) {
   ioRef = io
 
   io.on('connection', (socket) => {
-    socket.on('clipboard:join', async (payload: { clipboardId: string; sessionToken: string }) => {
-      try {
-        const session = verifySession(payload.sessionToken)
-        if (session.clipboardId !== payload.clipboardId) {
-          socket.emit('clipboard:error', { message: 'Forbidden' })
-          return
-        }
-
-        const cb = await getClipboard(payload.clipboardId)
-        if (!cb) {
-          socket.emit('clipboard:error', { message: 'Not found' })
-          return
-        }
-        if (cb.expiresAt && Date.now() > new Date(cb.expiresAt).getTime()) {
-          socket.emit('clipboard:error', { message: 'Expired' })
-          return
-        }
-
-        const room = `clipboard:${payload.clipboardId}`
-        await socket.join(room)
-
-        socket.data.clipboardId = payload.clipboardId
-        socket.data.role = session.role
-
-        // Presence handling
-        const existing = presenceByClipboard.get(payload.clipboardId) || new Map()
-        existing.set(socket.id, { id: socket.id, connectedAt: nowIso() })
-        presenceByClipboard.set(payload.clipboardId, existing)
-        io.to(room).emit('presence:update', { users: Array.from(existing.values()) })
-
-        socket.emit('clipboard:state', {
-          id: cb.id,
-          role: session.role,
-          contentHtml: cb.contentHtml,
-          contentUpdatedAt: cb.contentUpdatedAt,
-          activity: cb.activity,
-          settings: cb.settings
-        })
-
-        socket.on('clipboard:content:update', async (msg: { html: string }) => {
-          if (socket.data.role !== 'write') return
-
-          const clipboardId = payload.clipboardId
-          let clipboardPending = pendingContentUpdates.get(clipboardId)
-          if (!clipboardPending) {
-            clipboardPending = new Map()
-            pendingContentUpdates.set(clipboardId, clipboardPending)
+    socket.on(
+      'clipboard:join',
+      async (payload: { clipboardId: string; sessionToken: string }) => {
+        try {
+          const session = verifySession(payload.sessionToken)
+          if (session.clipboardId !== payload.clipboardId) {
+            socket.emit('clipboard:error', { message: 'Forbidden' })
+            return
           }
 
-          const existing = clipboardPending.get(socket.id)
-          if (existing) clearTimeout(existing.timer)
+          const cb = await getClipboard(payload.clipboardId)
+          if (!cb) {
+            socket.emit('clipboard:error', { message: 'Not found' })
+            return
+          }
 
-          io.to(room).emit('clipboard:content:updated', {
-            html: msg.html,
-            contentUpdatedAt: nowIso()
+          if (cb.expiresAt && Date.now() > new Date(cb.expiresAt).getTime()) {
+            socket.emit('clipboard:error', { message: 'Expired' })
+            return
+          }
+
+          const room = `clipboard:${payload.clipboardId}`
+          await socket.join(room)
+
+          socket.data.clipboardId = payload.clipboardId
+          socket.data.role = session.role
+
+          // Presence
+          const existing =
+            presenceByClipboard.get(payload.clipboardId) || new Map()
+          existing.set(socket.id, {
+            id: socket.id,
+            connectedAt: nowIso()
+          })
+          presenceByClipboard.set(payload.clipboardId, existing)
+
+          io.to(room).emit('presence:update', {
+            users: Array.from(existing.values())
           })
 
-          const timer = setTimeout(async () => {
-            try {
-              const cb2 = await getClipboard(clipboardId)
-              if (!cb2) return
+          // Send initial state
+          socket.emit('clipboard:state', {
+            id: cb.id,
+            role: session.role,
+            contentHtml: cb.contentHtml,
+            contentUpdatedAt: cb.contentUpdatedAt,
+            activity: cb.activity,
+            settings: cb.settings
+          })
 
-              const contentUpdatedAt = nowIso()
-              const newActivity = {
-                id: nanoid(10),
-                type: 'content-updated' as const,
-                at: contentUpdatedAt,
-                summary: 'Content updated'
+          // REAL-TIME CONTENT HANDLER
+          socket.on(
+            'clipboard:content:update',
+            async (msg: { html: string }) => {
+              if (socket.data.role !== 'write') return
+
+              const clipboardId = payload.clipboardId
+
+              let pending = pendingContentUpdates.get(clipboardId)
+              if (!pending) {
+                pending = new Map()
+                pendingContentUpdates.set(clipboardId, pending)
               }
 
-              await updateClipboard(clipboardId, {
-                contentHtml: msg.html,
-                contentUpdatedAt,
-                activity: [newActivity, ...cb2.activity]
-              })
+              const existing = pending.get(socket.id)
+              if (existing) clearTimeout(existing.timer)
 
+              // ✔️ REALTIME UPDATE (ONLY BROADCAST ONCE)
               io.to(room).emit('clipboard:content:updated', {
                 html: msg.html,
-                contentUpdatedAt
+                contentUpdatedAt: nowIso()
               })
-            } catch (error) {
-              console.error('Failed to update clipboard:', error)
-              socket.emit('clipboard:error', { message: 'Failed to save changes' })
-            } finally {
-              clipboardPending!.delete(socket.id)
-              if (clipboardPending!.size === 0) {
-                pendingContentUpdates.delete(clipboardId)
-              }
-            }
-          }, 500)
 
-          clipboardPending.set(socket.id, { html: msg.html, timer })
-        })
-      } catch {
-        socket.emit('clipboard:error', { message: 'Unauthorized' })
+              // ✔️ Debounced Firestore save (NO broadcast here)
+              const timer = setTimeout(async () => {
+                try {
+                  const cb2 = await getClipboard(clipboardId)
+                  if (!cb2) return
+
+                  const contentUpdatedAt = nowIso()
+                  const newActivity = {
+                    id: nanoid(10),
+                    type: 'content-updated' as const,
+                    at: contentUpdatedAt,
+                    summary: 'Content updated'
+                  }
+
+                  await updateClipboard(clipboardId, {
+                    contentHtml: msg.html,
+                    contentUpdatedAt,
+                    activity: [newActivity, ...cb2.activity]
+                  })
+                } catch (err) {
+                  console.error('Failed to save clipboard:', err)
+                  socket.emit('clipboard:error', {
+                    message: 'Failed to save changes'
+                  })
+                } finally {
+                  pending!.delete(socket.id)
+                  if (pending!.size === 0) {
+                    pendingContentUpdates.delete(clipboardId)
+                  }
+                }
+              }, 150)
+
+              pending.set(socket.id, { html: msg.html, timer })
+            }
+          )
+        } catch {
+          socket.emit('clipboard:error', { message: 'Unauthorized' })
+        }
       }
-    })
+    )
 
     socket.on('disconnect', () => {
-      const clipboardId = socket.data.clipboardId as string | undefined
+      const clipboardId = socket.data.clipboardId
       if (!clipboardId) return
 
       const map = presenceByClipboard.get(clipboardId)
       if (map) {
         map.delete(socket.id)
         const room = `clipboard:${clipboardId}`
-        io.to(room).emit('presence:update', { users: Array.from(map.values()) })
+        io.to(room).emit('presence:update', {
+          users: Array.from(map.values())
+        })
       }
 
-      const clipboardPending = pendingContentUpdates.get(clipboardId)
-      if (clipboardPending) {
-        const pending = clipboardPending.get(socket.id)
-        if (pending) {
-          clearTimeout(pending.timer)
+      // Clean pending save
+      const pending = pendingContentUpdates.get(clipboardId)
+      if (pending) {
+        const entry = pending.get(socket.id)
+        if (entry) {
+          clearTimeout(entry.timer)
+
           getClipboard(clipboardId)
             .then((cb2) => {
               if (!cb2) return
               const contentUpdatedAt = nowIso()
+
               const newActivity = {
                 id: nanoid(10),
                 type: 'content-updated' as const,
                 at: contentUpdatedAt,
                 summary: 'Content updated'
               }
+
               return updateClipboard(clipboardId, {
-                contentHtml: pending.html,
+                contentHtml: entry.html,
                 contentUpdatedAt,
                 activity: [newActivity, ...cb2.activity]
               })
             })
             .catch(console.error)
             .finally(() => {
-              clipboardPending.delete(socket.id)
-              if (clipboardPending.size === 0) {
+              pending.delete(socket.id)
+              if (pending.size === 0) {
                 pendingContentUpdates.delete(clipboardId)
               }
             })
@@ -169,6 +199,7 @@ export function attachSocket(server: http.Server) {
     })
   })
 
+  // Cleanup expired clipboards
   setInterval(async () => {
     try {
       const now = Date.now()
@@ -184,7 +215,10 @@ export function attachSocket(server: http.Server) {
   }, 60_000)
 }
 
-export function emitClipboardContentUpdated(clipboardId: string, payload: { html: string; contentUpdatedAt: string }) {
+export function emitClipboardContentUpdated(
+  clipboardId: string,
+  payload: { html: string; contentUpdatedAt: string }
+) {
   if (!ioRef) return
   ioRef.to(`clipboard:${clipboardId}`).emit('clipboard:content:updated', payload)
 }
