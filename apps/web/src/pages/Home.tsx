@@ -159,10 +159,6 @@ export function Home() {
         </div>
       </Modal>
 
-      <footer className="mt-10 text-xs text-text-muted">
-        SharedClip is optimized for speed and low-friction sharing. For production, configure a strong JWT secret and
-        restrict CORS.
-      </footer>
     </div>
   )
 }
