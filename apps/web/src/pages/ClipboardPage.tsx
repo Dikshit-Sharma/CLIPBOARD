@@ -423,3 +423,4 @@ function SettingsModal(props: {
     </footer>
   </>
 )
+}
