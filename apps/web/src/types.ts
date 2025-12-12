@@ -6,9 +6,20 @@ export type ClipboardSettings = {
 
 export type ClipboardActivity = {
   id: string
-  type: 'created' | 'content-updated' | 'settings-updated'
+  // allow string to accommodate incoming activity types from older cached data or external sources.
+  // the usual values are 'created' | 'content-updated' | 'settings-updated'
+  type: string
   at: string
   summary: string
+}
+
+export type ClipboardFile = {
+  id: string
+  name: string
+  size: number
+  mimeType?: string
+  url: string
+  uploadedAt?: string
 }
 
 export type ClipboardMeta = {
