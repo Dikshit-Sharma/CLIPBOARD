@@ -5,17 +5,30 @@ import { clipboardsRouter } from './routes/clipboards.js'
 export function createApp() {
   const app = express()
 
-  const webOrigin = process.env.WEB_ORIGIN || 'http://localhost:5173'
+  const allowedOrigins = [
+    'http://localhost:5173',
+    'https://sharedclip.netlify.app'
+  ]
+
   app.use(
     cors({
-      origin: webOrigin,
+      origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) {
+          callback(null, true)
+        } else {
+          callback(new Error(`CORS blocked for origin: ${origin}`))
+        }
+      },
       credentials: true
     })
   )
+
   app.use(express.json({ limit: '1mb' }))
 
 
-  app.get('/healthz', (_req, res) => res.json({ ok: true }))
+  app.get('/health', (_req, res) => res.json({ ok: true }));
+  app.get('/healthz', (_req, res) => res.json({ ok: true }));
+
 
   app.use('/api/clipboards', clipboardsRouter)
 
