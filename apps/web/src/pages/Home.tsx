@@ -269,9 +269,8 @@ export function Home() {
       {/* Footer */}
       <footer className="mt-16 text-center">
         <div className="inline-flex items-center gap-2 rounded-xl bg-surface-900/50 px-4 py-2 text-xs text-text-muted ring-1 ring-white/10">
-          <span>Developed with</span>
-          <span className="text-red-400">❤️</span>
-          <span>by Dikshit Sharma</span>
+          <span>Developed by</span>
+          <span>Dikshit Sharma</span>
         </div>
       </footer>
     </div>

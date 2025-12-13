@@ -528,9 +528,13 @@ function SettingsModal(props: {
       </div>
     </Modal>
 
-    <footer className="mt-10 text-center text-xs text-text-muted">
-      This project is developed by Dikshit Sharma.
-    </footer>
+    {/* Footer */}
+    <footer className="mt-16 text-center">
+        <div className="inline-flex items-center gap-2 rounded-xl bg-surface-900/50 px-4 py-2 text-xs text-text-muted ring-1 ring-white/10">
+          <span>Developed by</span>
+          <span>Dikshit Sharma</span>
+        </div>
+      </footer>
   </>
 )
 }
