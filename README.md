@@ -1,149 +1,351 @@
-# SharedClip
-SharedClip is a sleek, dark-themed, real-time shareable clipboard for rich text and files.
+# 📋 SharedClip
 
-It’s designed for “paste a code / open a link → instantly collaborate”.
+> A modern, real-time collaborative clipboard for rich text and notes. Share content instantly with a simple code or link.
 
-## Features
-- Create / open clipboards via short code (8 chars)
-- Shareable links
-  - Read-only and read/write tokens (links carry `?token=...`)
-- Rich text editing (TipTap)
-  - Bold, italic, inline code, code blocks
-  - Up to 500KB of text content per clipboard
-- Realtime sync
-  - Socket.IO rooms per clipboard
-  - Presence indicator (online count)
-- Clipboard search
-  - Home: search recent clipboards
-- Optional password protection
-- Optional expiration (`1h`, `1d`, `never`)
-- **100% Free** - Uses Firebase Firestore free tier (text-only, no file storage)
-- Tests
-  - Unit/integration: Vitest
-  - E2E: Playwright (realtime sync test)
-- CI/CD ready
-  - GitHub Actions workflow in `.github/workflows/ci.yml`
+**🌐 Live Demo:** [sharedclip.netlify.app](https://sharedclip.netlify.app)
 
-## Tech stack
-- Frontend: React + TypeScript + Vite + Tailwind CSS
-- Realtime: Socket.IO
-- Backend: Node.js (Express) + Socket.IO
-- Database: Firebase Firestore (text-only, stays within free tier)
+![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)
+![License](https://img.shields.io/badge/license-MIT-green.svg)
+![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)
+![React](https://img.shields.io/badge/React-20232A?logo=react&logoColor=61DAFB)
+![Node.js](https://img.shields.io/badge/Node.js-339933?logo=node.js&logoColor=white)
 
-## Repo layout
-- `apps/web`: React frontend
-- `apps/server`: Express + Socket.IO backend
-- `tests/e2e`: Playwright tests
+---
 
-## Prereqs
+## ✨ Features
+
+### 🎨 Rich Text Editing
+- **Full-featured editor** powered by TipTap
+- **Formatting options**: Bold, Italic, Underline, Strikethrough
+- **Headings**: H1, H2, H3 support
+- **Lists**: Bullet lists and ordered lists
+- **Code blocks**: Syntax-highlighted code blocks with multiple language support
+- **Inline code**: Highlighted inline code snippets
+- **Blockquotes**: For quotes and callouts
+- **Links**: Clickable links that open in new tabs
+- **Word & character count**: Real-time statistics
+- **Export options**: Copy content as plain text or HTML
+
+### 🔄 Real-Time Collaboration
+- **Live sync**: Changes appear instantly for all users
+- **Presence indicators**: See who's online on each clipboard
+- **Activity feed**: Track all changes and updates
+- **Socket.IO powered**: Fast, reliable real-time communication
+- **Citrix compatible**: Optimized for enterprise environments with polling fallback
+
+### 🔐 Security & Privacy
+- **Password protection**: Optional password for sensitive content
+- **Token-based access**: Secure read-only and read/write tokens
+- **Expiration settings**: Auto-expire after 1 hour, 1 day, or never
+- **Session management**: Secure JWT-based authentication
+
+### 🚀 User Experience
+- **Short codes**: 8-character clipboard IDs for easy sharing
+- **Shareable links**: Generate read-only or read/write links
+- **Recent clipboards**: Quick access to recently opened clipboards
+- **Search functionality**: Find clipboards by code
+- **Delete management**: Remove individual or all recent clipboards
+- **Modern UI**: Beautiful dark theme with smooth animations
+- **Responsive design**: Works perfectly on desktop, tablet, and mobile
+- **Fast loading**: REST API pre-loading for instant content display
+
+### 💾 Data Management
+- **500KB content limit**: Sufficient for most use cases
+- **Activity tracking**: Complete history of clipboard changes
+- **Local caching**: Faster subsequent loads
+- **Auto-cleanup**: Expired clipboards automatically removed
+
+### 🎯 Additional Features
+- **Copy to clipboard**: One-click copy for IDs and links
+- **Settings management**: Update expiration and password
+- **Error handling**: Graceful error messages and recovery
+- **Loading states**: Clear feedback during operations
+- **Keyboard shortcuts**: Efficient editing experience
+
+---
+
+## 🛠️ Tech Stack
+
+### Frontend
+- **React 19** - UI framework
+- **TypeScript** - Type safety
+- **Vite** - Build tool and dev server
+- **Tailwind CSS** - Utility-first CSS framework
+- **TipTap** - Rich text editor
+- **Socket.IO Client** - Real-time communication
+- **React Query** - Data fetching and caching
+- **React Router** - Client-side routing
+- **Lucide React** - Icon library
+
+### Backend
+- **Node.js** - Runtime environment
+- **Express** - Web framework
+- **Socket.IO** - Real-time WebSocket communication
+- **TypeScript** - Type safety
+- **Firebase Admin SDK** - Database operations
+- **JWT** - Authentication tokens
+- **bcryptjs** - Password hashing
+
+### Database & Infrastructure
+- **Firebase Firestore** - NoSQL database (free tier)
+- **Netlify** - Frontend hosting
+- **Render/Railway** - Backend hosting (recommended)
+
+---
+
+## 📦 Installation
+
+### Prerequisites
 - Node.js 18+
 - npm 9+
+- Firebase account (free tier)
 
-## Quickstart (local)
-### 1) Install
-```bash
-npm install
-```
+### Quick Start
 
-### 2) Set up Firebase
-See [FIREBASE_SETUP.md](./FIREBASE_SETUP.md) for Firebase project setup.
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/yourusername/sharedclip.git
+   cd sharedclip
+   ```
 
-Quick steps:
-1. Create a Firebase project at https://console.firebase.google.com
-2. Enable Firestore Database (Storage not needed - text-only)
-3. Create a service account key (Project Settings > Service Accounts)
-4. Download the service account JSON file
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-### 3) Configure Backend
-**📘 See [BACKEND_SETUP.md](./BACKEND_SETUP.md) for complete step-by-step guide!**
+3. **Set up Firebase**
+   - Create a Firebase project at [Firebase Console](https://console.firebase.google.com)
+   - Enable Firestore Database
+   - Create a service account key (Project Settings > Service Accounts)
+   - Download the service account JSON file
+   - See [FIREBASE_SETUP.md](./FIREBASE_SETUP.md) for detailed instructions
 
-Quick setup - Create `apps/server/.env`:
+4. **Configure Backend**
 
-```bash
-PORT=8080
-JWT_SECRET=YOUR_JWT_SECRET_HERE              # Run: openssl rand -hex 32
-WEB_ORIGIN=http://localhost:5173
-PUBLIC_BASE_URL=http://localhost:8080
-GOOGLE_APPLICATION_CREDENTIALS=./firebase-service-account.json
-```
+   Create `apps/server/.env`:
+   ```bash
+   PORT=8080
+   JWT_SECRET=your_jwt_secret_here  # Generate with: openssl rand -hex 32
+   WEB_ORIGIN=http://localhost:5173
+   PUBLIC_BASE_URL=http://localhost:8080
+   GOOGLE_APPLICATION_CREDENTIALS=./firebase-service-account.json
+   ```
 
-**Fill in**:
-- Replace `YOUR_JWT_SECRET_HERE` with output from `openssl rand -hex 32`
-- Place `firebase-service-account.json` in `apps/server/` directory
+   Place your Firebase service account JSON file in `apps/server/` directory.
 
-### 4) Configure Frontend
-```bash
-# Create apps/web/.env
-VITE_API_BASE_URL=http://localhost:8080
-VITE_SOCKET_URL=http://localhost:8080
-```
+5. **Configure Frontend**
 
-Defaults are:
-- Web: `http://localhost:5173`
-- API/Socket server: `http://localhost:8080`
+   Create `apps/web/.env`:
+   ```bash
+   VITE_API_BASE_URL=http://localhost:8080
+   VITE_SOCKET_URL=http://localhost:8080
+   ```
 
-### 3) Run dev
-```bash
-npm run dev
-```
-- Web: `http://localhost:5173`
-- Server health: `http://localhost:8080/healthz`
+6. **Run development servers**
+   ```bash
+   npm run dev
+   ```
 
-## Testing
-Unit/integration:
+   - Frontend: http://localhost:5173
+   - Backend: http://localhost:8080
+
+---
+
+## 📖 Usage
+
+### Creating a Clipboard
+
+1. Click **"Create New Clipboard"** on the home page
+2. Choose expiration time (1 hour, 1 day, or never)
+3. Optionally set a password for protection
+4. Click **"Create"** to generate a new clipboard
+
+### Sharing a Clipboard
+
+1. **Share the clipboard ID**: The 8-character code (e.g., `ABC12345`)
+2. **Share a link**:
+   - **Read-only link**: For viewing only
+   - **Read/write link**: For full editing access
+3. Links include tokens in the URL: `https://sharedclip.netlify.app/c/ABC12345?token=...`
+
+### Editing Content
+
+- **Rich formatting**: Use the toolbar to format text
+- **Real-time sync**: Changes appear instantly for all users
+- **Export**: Copy content as text or HTML
+- **Word count**: Monitor content length
+
+### Managing Clipboards
+
+- **Recent clipboards**: Access from the home page
+- **Search**: Filter recent clipboards by code
+- **Delete**: Remove individual or all recent clipboards
+- **Settings**: Update expiration and password (write access required)
+
+---
+
+## 🚀 Deployment
+
+### Netlify (Frontend) + Render (Backend)
+
+#### Frontend Deployment (Netlify)
+
+1. **Connect repository** to Netlify
+2. **Build settings**:
+   - Base directory: `apps/web`
+   - Build command: `npm run build`
+   - Publish directory: `apps/web/dist`
+3. **Environment variables**:
+   ```
+   VITE_API_BASE_URL=https://your-backend.onrender.com
+   VITE_SOCKET_URL=https://your-backend.onrender.com
+   ```
+
+#### Backend Deployment (Render)
+
+1. **Create a new Web Service**
+2. **Connect repository**
+3. **Build settings**:
+   - Build command: `npm install && npm run build --prefix apps/server`
+   - Start command: `node apps/server/dist/index.js`
+4. **Environment variables**:
+   ```
+   PORT=10000
+   JWT_SECRET=your_jwt_secret_here
+   WEB_ORIGIN=https://sharedclip.netlify.app
+   PUBLIC_BASE_URL=https://your-backend.onrender.com
+   GOOGLE_APPLICATION_CREDENTIALS=./firebase-service-account.json
+   ```
+5. **Upload Firebase service account JSON** as a secret file
+
+See [NETLIFY_DEPLOYMENT.md](./NETLIFY_DEPLOYMENT.md) and [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed guides.
+
+---
+
+## 🧪 Testing
+
+### Unit Tests
 ```bash
 npm run test --prefix apps/server
 npm run test --prefix apps/web
 ```
 
-E2E (starts both dev servers automatically via Playwright webServer):
+### End-to-End Tests
 ```bash
 npm run test:e2e
 ```
 
-## Build
+### Linting
 ```bash
-npm run build
+npm run lint
 ```
 
-## Deployment
+---
 
-### Netlify Deployment (Recommended)
-See [NETLIFY_DEPLOYMENT.md](./NETLIFY_DEPLOYMENT.md) for a complete guide to deploying on Netlify with Firebase.
+## 📁 Project Structure
 
-**Quick Overview:**
-1. **Frontend**: Deploy to Netlify (static hosting)
-2. **Backend**: Deploy to Render/Fly.io/Railway (supports WebSockets)
-3. **Database & Storage**: Firebase (Firestore + Storage)
+```
+sharedclip/
+├── apps/
+│   ├── web/              # React frontend
+│   │   ├── src/
+│   │   │   ├── components/   # React components
+│   │   │   ├── pages/        # Page components
+│   │   │   ├── services/     # API and Socket.IO clients
+│   │   │   └── lib/           # Utilities
+│   │   └── package.json
+│   └── server/           # Express backend
+│       ├── src/
+│       │   ├── routes/       # API routes
+│       │   ├── socket.ts      # Socket.IO handlers
+│       │   ├── db.ts          # Firestore operations
+│       │   └── auth.ts        # JWT authentication
+│       └── package.json
+├── tests/
+│   └── e2e/              # Playwright E2E tests
+├── netlify.toml          # Netlify configuration
+└── package.json          # Root package.json
+```
 
-### Other Deployment Options
+---
 
-**Option A: Vercel/Netlify (web) + Render/Fly (server)**
-1. Deploy `apps/server` (Node service)
-   - Set Firebase environment variables (see FIREBASE_SETUP.md)
-   - Set `JWT_SECRET` to a strong random secret
-   - Set `WEB_ORIGIN` to your deployed frontend origin
-2. Deploy `apps/web`
-   - Set `VITE_API_BASE_URL` to your server URL
-   - Set `VITE_SOCKET_URL` to your server URL
+## 🔒 Security
 
-**Option B: Single host (reverse proxy)**
-Serve `apps/web/dist` behind Nginx and reverse-proxy `/api` + Socket.IO to the Node server.
+- **Token-based authentication**: Secure JWT tokens for sessions
+- **Password hashing**: bcrypt for password protection
+- **CORS protection**: Configured origin restrictions
+- **Input validation**: Zod schemas for request validation
+- **Rate limiting**: Recommended for production
+- **Firebase security rules**: Deny all client access (server-only)
 
-## Security notes
-- Token links (`?token=...`) act as bearer secrets; treat them like passwords.
-- For production:
-  - Use a strong `JWT_SECRET`
-  - Restrict `WEB_ORIGIN`
-  - Add rate limiting
-  - Configure Firebase security rules (deny all client access)
-  - Never commit Firebase service account keys to Git
-  - Use environment variables for all sensitive configuration
+**⚠️ Important**: Token links act as bearer secrets. Treat them like passwords and never share publicly.
 
-## Demo link
-This repository includes everything needed to run and deploy SharedClip, but a hosted demo depends on your infrastructure.
+---
 
-- Demo (fill in after deployment): `<YOUR_DEMO_LINK>`
+## 🤝 Contributing
 
-## License
-MIT
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+---
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 👨‍💻 Author
+
+**Dikshit Sharma**
+
+- 🌐 Website: [sharedclip.netlify.app](https://sharedclip.netlify.app)
+- 📧 For questions or support, please open an issue on GitHub
+
+---
+
+## 🙏 Acknowledgments
+
+- [TipTap](https://tiptap.dev/) - Amazing rich text editor
+- [Socket.IO](https://socket.io/) - Real-time communication
+- [Firebase](https://firebase.google.com/) - Backend infrastructure
+- [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS framework
+
+---
+
+## 📊 Project Status
+
+✅ **Production Ready** - Fully functional and deployed
+
+- ✅ Real-time collaboration
+- ✅ Rich text editing
+- ✅ Security features
+- ✅ Modern UI/UX
+- ✅ Mobile responsive
+- ✅ Enterprise compatible (Citrix)
+
+---
+
+## 🐛 Known Issues
+
+None at the moment. If you find any issues, please [open an issue](https://github.com/yourusername/sharedclip/issues).
+
+---
+
+## 🔮 Future Enhancements
+
+- [ ] Markdown import/export
+- [ ] Collaborative cursors
+- [ ] Version history
+- [ ] Templates
+- [ ] Themes customization
+- [ ] Mobile app
+
+---
+
+**⭐ If you find this project useful, please consider giving it a star!**
