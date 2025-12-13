@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { AlertTriangle, ArrowLeft, Copy, Link2, Lock, Settings, Share2, Trash2 } from 'lucide-react'
+import { AlertTriangle, ArrowLeft, Copy, Link2, Lock, Settings, Share2, Trash2, Github } from 'lucide-react'
 import { Button, Card, Input, Modal } from '../components/ui'
 import { ApiError, authClipboard, getClipboardMeta, getClipboardState, updateClipboardSettings, deleteClipboard } from '../services/api'
 import { createClipboardSocket, type PresenceUser } from '../services/realtime'
@@ -259,6 +259,16 @@ export function ClipboardPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
+            <a
+              href="https://github.com/Dikshit-Sharma/CLIPBOARD"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-xl bg-surface-800/80 px-3 py-2 text-xs font-medium text-text-primary hover:bg-surface-700 border border-white/10 hover:border-white/20 transition-all duration-200"
+              title="View on GitHub"
+            >
+              <Github className="h-4 w-4" />
+              <span className="hidden sm:inline">GitHub</span>
+            </a>
             <PresenceBar users={presence} />
 
             <Button
@@ -530,11 +540,21 @@ function SettingsModal(props: {
 
     {/* Footer */}
     <footer className="mt-16 text-center">
+      <div className="flex flex-col items-center gap-3">
         <div className="inline-flex items-center gap-2 rounded-xl bg-surface-900/50 px-4 py-2 text-xs text-text-muted ring-1 ring-white/10">
-          <span>Developed by</span>
-          <span>Dikshit Sharma</span>
+          <span>Developed by Dikshit Sharma</span>
         </div>
-      </footer>
+        <a
+          href="https://github.com/Dikshit-Sharma/CLIPBOARD"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 rounded-xl bg-surface-900/50 px-4 py-2 text-xs text-text-muted hover:text-text-primary hover:bg-surface-800/50 ring-1 ring-white/10 transition-all duration-200 hover:ring-white/20"
+        >
+          <Github className="h-4 w-4" />
+          <span>View on GitHub</span>
+        </a>
+      </div>
+    </footer>
   </>
 )
 }
