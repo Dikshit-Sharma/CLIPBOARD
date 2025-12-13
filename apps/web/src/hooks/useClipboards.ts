@@ -42,10 +42,15 @@ export function useClipboards() {
       orderBy('createdAt', 'desc')
     )
 
-    const unsubClipboards = onSnapshot(q, (snapshot) => {
-      const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Clipboard))
-      setClipboards(data)
-    })
+    const unsubClipboards = onSnapshot(q,
+      (snapshot) => {
+        const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Clipboard))
+        setClipboards(data)
+      },
+      (error) => {
+        console.error("Error fetching clipboards:", error)
+      }
+    )
 
     // 2. Subscribe to Folders
     const unsubFolders = onSnapshot(
@@ -53,6 +58,9 @@ export function useClipboards() {
       (snapshot) => {
         const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Folder))
         setFolders(data)
+      },
+      (error) => {
+        console.error("Error fetching folders:", error)
       }
     )
 
@@ -61,6 +69,9 @@ export function useClipboards() {
       collection(db, `users/${user.uid}/favorites`),
       (snapshot) => {
         setFavorites(new Set(snapshot.docs.map(d => d.id)))
+      },
+      (error) => {
+        console.error("Error fetching favorites:", error)
       }
     )
 
@@ -69,6 +80,9 @@ export function useClipboards() {
       collection(db, `users/${user.uid}/archived`),
       (snapshot) => {
         setArchived(new Set(snapshot.docs.map(d => d.id)))
+      },
+      (error) => {
+        console.error("Error fetching archived:", error)
       }
     )
 

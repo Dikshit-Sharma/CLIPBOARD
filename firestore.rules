@@ -1,0 +1,35 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Helper to check if user owns the document
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    // Clipboards Collection
+    match /clipboards/{clipboardId} {
+      // Allow read if user is owner (or if you want public read, adjust accordingly)
+      // For dashboard, we only query owned clipboards.
+      allow read: if isAuthenticated() && resource.data.ownerId == request.auth.uid;
+
+      // Allow create if auth matches ownerId
+      allow create: if isAuthenticated() && request.resource.data.ownerId == request.auth.uid;
+
+      // Allow update if owner (e.g. changing folderId)
+      allow update: if isAuthenticated() && resource.data.ownerId == request.auth.uid;
+
+      // Allow delete if owner
+      allow delete: if isAuthenticated() && resource.data.ownerId == request.auth.uid;
+    }
+
+    // User Sub-collections (Folders, Favorites, Archived)
+    match /users/{userId}/{document=**} {
+      allow read, write: if isOwner(userId);
+    }
+  }
+}
