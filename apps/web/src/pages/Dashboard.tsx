@@ -24,8 +24,8 @@ function getTimeAgo(isoString: string) {
 
 export function Dashboard() {
   const nav = useNavigate()
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { user } = useAuth()
+  useAuth() // Hook ensures auth state is loaded, but we don't need 'user' directly here
+
   const {
     clipboards, folders, favorites, archived, loading,
     createFolder, deleteFolder, toggleFavorite, toggleArchive, updateClipboard, deleteClipboard
@@ -42,8 +42,7 @@ export function Dashboard() {
   const filteredClipboards = clipboards.filter(cb => {
     // 1. Search
     if (search) {
-      const match = cb.contentHtml.toLowerCase().includes(search.toLowerCase()) ||
-                    cb.settings?.title?.toLowerCase().includes(search.toLowerCase())
+      const match = cb.contentHtml.toLowerCase().includes(search.toLowerCase())
       if (!match) return false
     }
 
@@ -260,9 +259,8 @@ export function Dashboard() {
         </div>
       </div>
 
-      <Modal open={isNewFolderOpen} onClose={() => setIsNewFolderOpen(false)}>
+      <Modal open={isNewFolderOpen} onClose={() => setIsNewFolderOpen(false)} title="Create New Folder">
         <form onSubmit={handleCreateFolder} className="p-6">
-          <h2 className="text-lg font-bold mb-4">Create New Folder</h2>
           <Input
             autoFocus
             placeholder="Folder Name"
