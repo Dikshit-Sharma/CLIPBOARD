@@ -3,8 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useMutation } from '@tanstack/react-query'
 import {
   Clipboard, Search, Plus, Clock, Star, Archive, Folder,
-  MoreVertical, Trash2, Copy, ExternalLink, ArrowLeft,
-  Sparkles, Filter, Grid, List, FolderPlus
+  MoreVertical, ArrowLeft, Sparkles, Grid, List, FolderPlus
 } from 'lucide-react'
 import { Button, Card, Input, Modal } from '../components/ui'
 import { useAuth } from '../lib/auth'
@@ -40,7 +39,6 @@ export function Dashboard() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [showArchived, setShowArchived] = useState(false)
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false)
-  const [createOpen, setCreateOpen] = useState(false)
   const [createFolderOpen, setCreateFolderOpen] = useState(false)
   const [newFolderName, setNewFolderName] = useState('')
 
@@ -67,7 +65,6 @@ export function Dashboard() {
     mutationFn: () => createClipboard({ expiresIn: 'never' }),
     onSuccess: (data) => {
       storeTokens(data.id, data.tokens)
-      setCreateOpen(false)
       trackClipboardCreated(data.id, false, 'never')
       navigate(`/c/${data.id}?token=${encodeURIComponent(data.tokens.writeToken)}`)
     }

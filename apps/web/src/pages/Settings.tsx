@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Moon, Sun, Monitor, Palette, Keyboard, Bell, Shield, Trash2 } from 'lucide-react'
-import { Button, Card, Input, Modal } from '../components/ui'
+import { ArrowLeft, Moon, Sun, Monitor, Palette, Keyboard, Shield, Trash2 } from 'lucide-react'
+import { Button, Card, Modal } from '../components/ui'
 import { useAuth } from '../lib/auth'
 import { useTheme } from '../lib/theme'
 

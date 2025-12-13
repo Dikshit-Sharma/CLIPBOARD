@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/auth'
-import { User, LogOut, Settings, LayoutDashboard, ChevronDown } from 'lucide-react'
+import { LogOut, Settings, LayoutDashboard, ChevronDown } from 'lucide-react'
 
 export function UserMenu() {
   const { user, signOut } = useAuth()

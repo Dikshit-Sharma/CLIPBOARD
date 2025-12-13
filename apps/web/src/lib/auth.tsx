@@ -15,8 +15,7 @@ import {
   GoogleAuthProvider,
   GithubAuthProvider,
   sendPasswordResetEmail,
-  updateProfile,
-  type User
+  updateProfile
 } from 'firebase/auth'
 import { app } from './firebase'
 
