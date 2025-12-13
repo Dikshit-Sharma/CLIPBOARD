@@ -145,7 +145,7 @@ export function attachSocket(server: http.Server) {
                 pendingContentUpdates.delete(clipboardId)
               }
             }
-          }, 500)
+          }, 100)
 
           clipboardPending.set(socket.id, { html: msg.html, timer })
         })
