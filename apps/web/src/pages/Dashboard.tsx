@@ -1,42 +1,40 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-  LayoutGrid, List as ListIcon, Star, Clock, Folder,
-  Plus, Search, Archive, Trash2, Shield
+  LayoutGrid, List as ListIcon, Plus, Search
 } from 'lucide-react'
-import { Button, Input, Card, Modal } from '../components/ui'
+import { Button, Input, Modal } from '../components/ui'
+import { ClipboardCard } from '../components/ClipboardCard'
 import { useClipboards } from '../hooks/useClipboards'
 import { useAuth } from '../lib/auth'
 
-function getTimeAgo(isoString: string) {
-  const date = new Date(isoString)
-  const now = new Date()
-  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000)
-
-  if (seconds < 60) return 'just now'
-
-  const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' })
-  if (seconds < 3600) return rtf.format(-Math.floor(seconds / 60), 'minute')
-  if (seconds < 86400) return rtf.format(-Math.floor(seconds / 3600), 'hour')
-  if (seconds < 2592000) return rtf.format(-Math.floor(seconds / 86400), 'day')
-  return rtf.format(-Math.floor(seconds / 2592000), 'month')
-}
-
 export function Dashboard() {
   const nav = useNavigate()
-  useAuth() // Hook ensures auth state is loaded, but we don't need 'user' directly here
+  const { user } = useAuth()
 
   const {
-    clipboards, folders, favorites, archived, loading,
+    clipboards, folders, favorites, archived, loading: isLoading,
     createFolder, deleteFolder, toggleFavorite, toggleArchive, updateClipboard, deleteClipboard
   } = useClipboards()
 
   const [view, setView] = useState<'grid' | 'list'>('grid')
   const [search, setSearch] = useState('')
   const [activeTab, setActiveTab] = useState<'all' | 'favorites' | 'archived'>('all')
-  const [selectedFolder, setSelectedFolder] = useState<string | null>(null)
+  const [activeFolderId, setActiveFolderId] = useState<string | null>(null)
   const [isNewFolderOpen, setIsNewFolderOpen] = useState(false)
   const [newFolderName, setNewFolderName] = useState('')
+  const [createFolderError, setCreateFolderError] = useState('')
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault()
+        document.getElementById('search-clipboards')?.focus()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
 
   // Filter Logic
   const filteredClipboards = clipboards.filter(cb => {
@@ -216,81 +214,18 @@ export function Dashboard() {
           ) : (
             <div className={view === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4' : 'space-y-2'}>
               {filteredClipboards.map(cb => (
-                <div
+                <ClipboardCard
                   key={cb.id}
-                  draggable
-                  onDragStart={(e) => handleDragStart(e, cb.id)}
-                >
-                  <Card className={`group relative hover:border-accent-500/50 transition-colors ${view === 'grid' ? 'h-48' : 'h-16 flex items-center px-4'}`}>
-                    <div
-                      className={`cursor-pointer ${view === 'grid' ? 'p-4 h-full flex flex-col' : 'flex-1 grid grid-cols-[1fr,auto,auto] gap-4 items-center'}`}
-                      onClick={() => nav(`/c/${cb.id}?token=${cb.readTokenHash}`)}
-                    >
-                      {/* Content Preview */}
-                      <div className={`${view === 'grid' ? 'flex-1 mb-2 mask-linear-fade' : ''} overflow-hidden`}>
-                        {cb.title ? (
-                          <div className="h-full flex flex-col">
-                            <h3 className="text-sm font-semibold text-text-primary mb-1 truncate">{cb.title}</h3>
-                            <div className="font-mono text-xs text-text-muted bg-surface-900/50 p-2 rounded border border-white/5 whitespace-pre-wrap break-all flex-1 overflow-hidden opacity-80">
-                               {cb.contentHtml ? cb.contentHtml.replace(/<[^>]*>/g, '').slice(0, 100) : <span className="italic opacity-50">Empty</span>}
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="font-mono text-xs text-text-muted bg-surface-900/50 p-2 rounded border border-white/5 whitespace-pre-wrap break-all h-full">
-                             {cb.contentHtml ? cb.contentHtml.replace(/<[^>]*>/g, '').slice(0, 300) : <span className="italic opacity-50">Empty</span>}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Meta */}
-                      <div className={`flex items-center gap-2 text-xs text-text-muted ${view === 'grid' ? 'border-t border-white/5 pt-3 mt-auto' : ''}`}>
-                        <span>{getTimeAgo(cb.createdAt)} ago</span>
-                        {cb.passwordHash && <Shield className="h-3 w-3 text-emerald-400" />}
-                        {activeTab === 'all' && favorites.has(cb.id) && <Star className="h-3 w-3 text-yellow-400 fill-yellow-400" />}
-                      </div>
-
-                      {/* Actions */}
-                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => e.stopPropagation()}>
-                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => toggleFavorite(cb.id)}>
-                          <Star className={`h-3 w-3 ${favorites.has(cb.id) ? 'text-yellow-400 fill-yellow-400' : ''}`} />
-                        </Button>
-                        <div className="relative group/folder">
-                          <Button variant="ghost" size="icon" className="h-7 w-7">
-                            <Folder className={`h-3 w-3 ${cb.folderId ? 'text-accent-400' : ''}`} />
-                          </Button>
-                          {/* Hover Dropdown for Folders */}
-                          <div className="absolute bottom-full right-0 mb-2 w-48 hidden group-hover/folder:block z-50">
-                            <div className="bg-surface-800 rounded-lg shadow-xl border border-white/10 p-1">
-                              <div className="text-[10px] uppercase text-text-muted px-2 py-1 font-semibold tracking-wider">Move to...</div>
-                              <button
-                                className="w-full text-left px-2 py-1.5 text-xs text-text-primary hover:bg-white/5 rounded flex items-center gap-2"
-                                onClick={(e) => { e.stopPropagation(); updateClipboard(cb.id, { folderId: null }) }}
-                              >
-                                <span>🚫</span> No Folder
-                              </button>
-                              {folders.map(f => (
-                                <button
-                                  key={f.id}
-                                  className={`w-full text-left px-2 py-1.5 text-xs text-text-primary hover:bg-white/5 rounded flex items-center gap-2 ${cb.folderId === f.id ? 'bg-accent-500/10 text-accent-400' : ''}`}
-                                  onClick={(e) => { e.stopPropagation(); updateClipboard(cb.id, { folderId: f.id }) }}
-                                >
-                                  <Folder className="h-3 w-3" />
-                                  <span className="truncate">{f.name}</span>
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => toggleArchive(cb.id)}>
-                          <Archive className={`h-3 w-3 ${archived.has(cb.id) ? 'text-accent-400' : ''}`} />
-                        </Button>
-                        <Button variant="ghost" size="icon" className="h-7 w-7 hover:text-red-400" onClick={() => deleteClipboard(cb.id)}>
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </div>
-                  </Card>
-                </div>
+                  clipboard={cb}
+                  folders={folders}
+                  isFavorite={favorites.has(cb.id)}
+                  isArchived={archived.has(cb.id)}
+                  view={view}
+                  onToggleFavorite={toggleFavorite}
+                  onToggleArchive={toggleArchive}
+                  onDelete={deleteClipboard}
+                  onMove={(id, folderId) => updateClipboard(id, { folderId })}
+                />
               ))}
             </div>
           )}
