@@ -68,7 +68,9 @@ export function RichEditor(props: {
       Link.configure({
         openOnClick: false,
         HTMLAttributes: {
-          class: 'text-accent-400 hover:text-accent-300 underline'
+          class: 'text-accent-400 hover:text-accent-300 underline',
+          target: '_blank',
+          rel: 'noopener noreferrer'
         }
       }),
       Strike,
@@ -115,9 +117,28 @@ export function RichEditor(props: {
     applyingRemote.current = false
   }, [editor, props.html])
 
+  const normalizeUrl = (url: string): string => {
+    const trimmed = url.trim()
+    if (!trimmed) return trimmed
+
+    // If it already starts with http:// or https://, return as-is
+    if (/^https?:\/\//i.test(trimmed)) {
+      return trimmed
+    }
+
+    // If it starts with //, add https:
+    if (trimmed.startsWith('//')) {
+      return `https:${trimmed}`
+    }
+
+    // Otherwise, add https://
+    return `https://${trimmed}`
+  }
+
   const setLink = () => {
     if (linkUrl) {
-      editor?.chain().focus().setLink({ href: linkUrl }).run()
+      const normalizedUrl = normalizeUrl(linkUrl)
+      editor?.chain().focus().setLink({ href: normalizedUrl }).run()
     } else {
       editor?.chain().focus().unsetLink().run()
     }
