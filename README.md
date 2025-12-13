@@ -333,7 +333,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🐛 Known Issues
 
-None at the moment. If you find any issues, please [open an issue](https://github.com/yourusername/sharedclip/issues).
+None at the moment. If you find any issues, please [open an issue](https://github.com/Dikshit-Sharma/sharedclip/issues).
 
 ---
 
