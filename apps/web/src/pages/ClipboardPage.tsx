@@ -12,6 +12,7 @@ import { PresenceBar } from '../components/PresenceBar'
 import { getStoredTokens } from '../lib/tokens'
 import { saveRecent, removeRecent } from '../lib/recent'
 import { getCachedState, setCachedState } from '../lib/cache'
+import { trackClipboardOpened, trackClipboardShared, trackClipboardDeleted, trackContentUpdated, trackSettingsUpdated } from '../lib/analytics'
 
 export function ClipboardPage() {
   const { id } = useParams<{ id: string }>()
@@ -137,6 +138,11 @@ export function ClipboardPage() {
         activity: s.activity,
         settings: s.settings
       }
+      // Track clipboard opened when state is received
+      const isFirstLoad = !state
+      if (isFirstLoad && id) {
+        trackClipboardOpened(id, token ? 'link' : 'code')
+      }
       // Only update if socket state is newer or if we don't have state yet
       setState((prev) => {
         if (!prev) return newState
@@ -189,9 +195,16 @@ export function ClipboardPage() {
   const settingsMut = useMutation({
     mutationFn: (input: Partial<ClipboardSettings> & { expiresIn?: '1h' | '1d' | 'never'; password?: string | null }) =>
       updateClipboardSettings(id!, sessionToken!, input),
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
       setState((prev) => (prev ? { ...prev, settings: data.settings } : prev))
       setSettingsOpen(false)
+      // Track settings update
+      if (id) {
+        trackSettingsUpdated(id, {
+          expires_in: variables.expiresIn,
+          has_password: variables.password !== undefined && variables.password !== null
+        })
+      }
     }
   })
 
@@ -201,6 +214,10 @@ export function ClipboardPage() {
       return deleteClipboard(id, sessionToken)
     },
     onSuccess: () => {
+      // Track deletion
+      if (id) {
+        trackClipboardDeleted(id)
+      }
       removeRecent(id!)
       nav('/')
     }
@@ -340,7 +357,13 @@ export function ClipboardPage() {
             <RichEditor
               html={state?.contentHtml || '<p></p>'}
               editable={isWrite}
-              onDebouncedUpdate={(html) => socketRef.current?.emit('clipboard:content:update', { html })}
+              onDebouncedUpdate={(html) => {
+                socketRef.current?.emit('clipboard:content:update', { html })
+                // Track content update
+                if (id) {
+                  trackContentUpdated(id, html.length)
+                }
+              }}
               onLocalUpdate={(html) =>
                 setState((prev) => (prev ? { ...prev, contentHtml: html, contentUpdatedAt: new Date().toISOString() } : prev))
               }
@@ -379,7 +402,14 @@ export function ClipboardPage() {
             <div className="text-xs text-text-muted">Current link</div>
             <div className="mt-1 flex gap-2">
               <Input readOnly value={shareLinks?.current || downloadLink} />
-              <Button onClick={() => copyToClipboard(shareLinks?.current || downloadLink)}>Copy</Button>
+              <Button
+                onClick={() => {
+                  copyToClipboard(shareLinks?.current || downloadLink)
+                  if (id) trackClipboardShared(id, 'current')
+                }}
+              >
+                Copy
+              </Button>
             </div>
           </div>
 
@@ -387,7 +417,15 @@ export function ClipboardPage() {
             <div className="text-xs text-text-muted">Read-only link</div>
             <div className="mt-1 flex gap-2">
               <Input readOnly value={shareLinks?.read || 'Not available (only shown for clipboards created on this device)'} />
-              <Button onClick={() => shareLinks?.read && copyToClipboard(shareLinks.read)} disabled={!shareLinks?.read}>
+              <Button
+                onClick={() => {
+                  if (shareLinks?.read) {
+                    copyToClipboard(shareLinks.read)
+                    if (id) trackClipboardShared(id, 'read')
+                  }
+                }}
+                disabled={!shareLinks?.read}
+              >
                 Copy
               </Button>
             </div>
@@ -397,7 +435,15 @@ export function ClipboardPage() {
             <div className="text-xs text-text-muted">Read/write link</div>
             <div className="mt-1 flex gap-2">
               <Input readOnly value={shareLinks?.write || 'Not available (only shown for clipboards created on this device)'} />
-              <Button onClick={() => shareLinks?.write && copyToClipboard(shareLinks.write)} disabled={!shareLinks?.write}>
+              <Button
+                onClick={() => {
+                  if (shareLinks?.write) {
+                    copyToClipboard(shareLinks.write)
+                    if (id) trackClipboardShared(id, 'write')
+                  }
+                }}
+                disabled={!shareLinks?.write}
+              >
                 Copy
               </Button>
             </div>

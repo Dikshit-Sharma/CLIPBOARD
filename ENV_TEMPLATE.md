@@ -54,6 +54,19 @@ VITE_API_BASE_URL=http://localhost:8080
 
 # Socket.IO server URL (usually same as API_BASE_URL)
 VITE_SOCKET_URL=http://localhost:8080
+
+# ============================================
+# Firebase Analytics (Optional)
+# ============================================
+# Get these from Firebase Console > Project Settings > General > Your apps
+# Add Firebase web app to your project to get these values
+VITE_FIREBASE_API_KEY=your_api_key_here
+VITE_FIREBASE_AUTH_DOMAIN=your_project_id.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=your_project_id
+VITE_FIREBASE_STORAGE_BUCKET=your_project_id.appspot.com
+VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+VITE_FIREBASE_APP_ID=your_app_id
+VITE_FIREBASE_MEASUREMENT_ID=G-XXXXXXXXXX
 ```
 
 ## How to Fill In
@@ -86,6 +99,14 @@ VITE_SOCKET_URL=http://localhost:8080
 
 2. **VITE_SOCKET_URL**:
    - Usually: `http://localhost:8080` (same as API_BASE_URL)
+
+3. **Firebase Analytics** (Optional):
+   - Go to Firebase Console > Project Settings > General
+   - Add a web app to your project (if not already added)
+   - Copy the Firebase configuration values
+   - Enable Google Analytics in Firebase Console
+   - Get Measurement ID from Analytics settings
+   - Paste all values into your `.env` file
 
 ## Quick Copy-Paste Commands
 

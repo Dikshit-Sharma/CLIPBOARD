@@ -7,6 +7,7 @@ import { createClipboard } from '../services/api'
 import { parseClipboardInput } from '../lib/parseClipboardInput'
 import { clearRecents, loadRecents, saveRecent, removeRecent } from '../lib/recent'
 import { storeTokens } from '../lib/tokens'
+import { trackClipboardCreated, trackClipboardOpened } from '../lib/analytics'
 
 export function Home() {
   const nav = useNavigate()
@@ -46,6 +47,8 @@ export function Home() {
       storeTokens(data.id, data.tokens)
       saveRecent(data.id)
       setCreateOpen(false)
+      // Track clipboard creation
+      trackClipboardCreated(data.id, Boolean(password.trim()), expiresIn)
       // Extract token from writeUrl or use stored token
       const writeToken = data.tokens.writeToken
       nav(`/c/${data.id}${writeToken ? `?token=${encodeURIComponent(writeToken)}` : ''}`)
@@ -57,6 +60,8 @@ export function Home() {
     if (!parsed) return
 
     saveRecent(parsed.id)
+    // Track clipboard opened
+    trackClipboardOpened(parsed.id, 'code')
     nav(`/c/${parsed.id}${parsed.token ? `?token=${encodeURIComponent(parsed.token)}` : ''}`)
   }
 
@@ -181,7 +186,10 @@ export function Home() {
                   >
                     <button
                       className="flex-1 min-w-0 px-4 py-3 text-left"
-                      onClick={() => nav(`/c/${r.id}`)}
+                      onClick={() => {
+                        trackClipboardOpened(r.id, 'recent')
+                        nav(`/c/${r.id}`)
+                      }}
                     >
                       <div className="flex-1 min-w-0">
                         <div className="font-mono text-sm font-semibold text-text-primary group-hover:text-accent-400 transition-colors">
@@ -195,7 +203,10 @@ export function Home() {
                     </button>
                     <div className="flex items-center gap-1 pr-2">
                       <button
-                        onClick={() => nav(`/c/${r.id}`)}
+                        onClick={() => {
+                          trackClipboardOpened(r.id, 'recent')
+                          nav(`/c/${r.id}`)
+                        }}
                         className="p-2 rounded-lg text-text-muted hover:text-accent-400 hover:bg-surface-700/50 transition-colors"
                         title="Open"
                       >
