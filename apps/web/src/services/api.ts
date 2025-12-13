@@ -10,6 +10,7 @@ function joinUrl(base: string, p: string) {
 export type CreateClipboardInput = {
   expiresIn: '1h' | '1d' | 'never'
   password?: string
+  title?: string
 }
 
 export async function createClipboard(input: CreateClipboardInput) {

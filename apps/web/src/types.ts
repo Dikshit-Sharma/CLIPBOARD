@@ -42,6 +42,7 @@ export type ClipboardState = {
 export type Clipboard = {
   id: string
   ownerId?: string | null
+  title?: string | null
   createdAt: string
   expiresAt: string | null
   passwordHash: string | null

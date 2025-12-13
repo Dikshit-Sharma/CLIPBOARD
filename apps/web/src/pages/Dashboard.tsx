@@ -227,11 +227,19 @@ export function Dashboard() {
                       onClick={() => nav(`/c/${cb.id}?token=${cb.readTokenHash}`)}
                     >
                       {/* Content Preview */}
-                      {/* Content Preview */}
                       <div className={`${view === 'grid' ? 'flex-1 mb-2 mask-linear-fade' : ''} overflow-hidden`}>
-                        <div className="font-mono text-xs text-text-muted bg-surface-900/50 p-2 rounded border border-white/5 whitespace-pre-wrap break-all h-full">
-                           {cb.contentHtml ? cb.contentHtml.replace(/<[^>]*>/g, '').slice(0, 300) : <span className="italic opacity-50">Empty</span>}
-                        </div>
+                        {cb.title ? (
+                          <div className="h-full flex flex-col">
+                            <h3 className="text-sm font-semibold text-text-primary mb-1 truncate">{cb.title}</h3>
+                            <div className="font-mono text-xs text-text-muted bg-surface-900/50 p-2 rounded border border-white/5 whitespace-pre-wrap break-all flex-1 overflow-hidden opacity-80">
+                               {cb.contentHtml ? cb.contentHtml.replace(/<[^>]*>/g, '').slice(0, 100) : <span className="italic opacity-50">Empty</span>}
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="font-mono text-xs text-text-muted bg-surface-900/50 p-2 rounded border border-white/5 whitespace-pre-wrap break-all h-full">
+                             {cb.contentHtml ? cb.contentHtml.replace(/<[^>]*>/g, '').slice(0, 300) : <span className="italic opacity-50">Empty</span>}
+                          </div>
+                        )}
                       </div>
 
                       {/* Meta */}
@@ -246,6 +254,33 @@ export function Dashboard() {
                         <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => toggleFavorite(cb.id)}>
                           <Star className={`h-3 w-3 ${favorites.has(cb.id) ? 'text-yellow-400 fill-yellow-400' : ''}`} />
                         </Button>
+                        <div className="relative group/folder">
+                          <Button variant="ghost" size="icon" className="h-7 w-7">
+                            <Folder className={`h-3 w-3 ${cb.folderId ? 'text-accent-400' : ''}`} />
+                          </Button>
+                          {/* Hover Dropdown for Folders */}
+                          <div className="absolute bottom-full right-0 mb-2 w-48 hidden group-hover/folder:block z-50">
+                            <div className="bg-surface-800 rounded-lg shadow-xl border border-white/10 p-1">
+                              <div className="text-[10px] uppercase text-text-muted px-2 py-1 font-semibold tracking-wider">Move to...</div>
+                              <button
+                                className="w-full text-left px-2 py-1.5 text-xs text-text-primary hover:bg-white/5 rounded flex items-center gap-2"
+                                onClick={(e) => { e.stopPropagation(); updateClipboard(cb.id, { folderId: null }) }}
+                              >
+                                <span>🚫</span> No Folder
+                              </button>
+                              {folders.map(f => (
+                                <button
+                                  key={f.id}
+                                  className={`w-full text-left px-2 py-1.5 text-xs text-text-primary hover:bg-white/5 rounded flex items-center gap-2 ${cb.folderId === f.id ? 'bg-accent-500/10 text-accent-400' : ''}`}
+                                  onClick={(e) => { e.stopPropagation(); updateClipboard(cb.id, { folderId: f.id }) }}
+                                >
+                                  <Folder className="h-3 w-3" />
+                                  <span className="truncate">{f.name}</span>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
                         <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => toggleArchive(cb.id)}>
                           <Archive className={`h-3 w-3 ${archived.has(cb.id) ? 'text-accent-400' : ''}`} />
                         </Button>

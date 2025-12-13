@@ -37,7 +37,8 @@ function parseRoleFromTokenHash(cb: Clipboard, token: string | undefined): Clipb
 
 const createSchema = z.object({
   expiresIn: z.enum(['1h', '1d', 'never']).default('never'),
-  password: z.string().min(4).max(128).optional()
+  password: z.string().min(4).max(128).optional(),
+  title: z.string().max(100).optional()
 })
 
 clipboardsRouter.post('/', async (req, res) => {
@@ -60,6 +61,7 @@ clipboardsRouter.post('/', async (req, res) => {
     const cb: Clipboard = {
       id,
       ownerId,
+      title: body.title || null,
       createdAt: nowIso(),
       expiresAt: computeExpiresAt(body.expiresIn),
       passwordHash,
@@ -104,6 +106,7 @@ clipboardsRouter.get('/:id/meta', async (req, res) => {
     createdAt: cb.createdAt,
     expiresAt: cb.expiresAt,
     protected: Boolean(cb.passwordHash),
+    title: cb.title,
     settings: cb.settings
   })
 })
@@ -164,13 +167,15 @@ clipboardsRouter.get('/:id/state', requireSession, async (req: Request, res: Res
     contentHtml: cb.contentHtml,
     contentUpdatedAt: cb.contentUpdatedAt,
     activity: cb.activity,
+    title: cb.title,
     settings: cb.settings
   })
 })
 
 const settingsSchema = z.object({
   expiresIn: z.enum(['1h', '1d', 'never']).optional(),
-  password: z.string().min(4).max(128).nullable().optional()
+  password: z.string().min(4).max(128).nullable().optional(),
+  title: z.string().max(100).nullable().optional()
 })
 
 clipboardsRouter.post('/:id/settings', requireSession, async (req: Request, res: Response) => {
@@ -187,6 +192,7 @@ clipboardsRouter.post('/:id/settings', requireSession, async (req: Request, res:
   const updates: Partial<Clipboard> = {}
 
   if (body.expiresIn) updates.expiresAt = computeExpiresAt(body.expiresIn)
+  if (body.title !== undefined) updates.title = body.title
   if (body.password !== undefined) {
     updates.passwordHash = body.password === null ? null : await bcrypt.hash(body.password, 10)
   }

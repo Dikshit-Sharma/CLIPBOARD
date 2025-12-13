@@ -25,6 +25,7 @@ export function Home() {
 
   const [expiresIn, setExpiresIn] = useState<'1h' | '1d' | 'never'>('never')
   const [password, setPassword] = useState('')
+  const [title, setTitle] = useState('')
 
   const recents = useMemo(() => {
     const list = loadRecents()
@@ -47,7 +48,8 @@ export function Home() {
     mutationFn: () =>
       createClipboard({
         expiresIn,
-        password: password.trim() ? password.trim() : undefined
+        password: password.trim() ? password.trim() : undefined,
+        title: title.trim() || undefined
       }),
     onSuccess: (data) => {
       storeTokens(data.id, data.tokens)
@@ -303,6 +305,17 @@ export function Home() {
               />
             </label>
           </div>
+
+          <label className="space-y-2">
+            <div className="flex items-center gap-2 text-xs font-medium text-text-muted">
+              <Sparkles className="h-4 w-4 text-accent-400" /> Clipboard Name (Optional)
+            </div>
+            <Input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="e.g. Project Notes, Shopping List"
+            />
+          </label>
 
           {createMut.isError && (
             <div className="rounded-xl bg-red-500/10 px-4 py-3 text-sm text-red-300 ring-1 ring-red-500/20">
