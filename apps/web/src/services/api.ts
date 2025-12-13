@@ -1,3 +1,5 @@
+import { getAuth } from 'firebase/auth'
+import { app } from '../lib/firebase'
 import { API_BASE_URL } from '../env'
 import type { ClipboardMeta, ClipboardSettings, ClipboardState } from '../types'
 
@@ -12,9 +14,17 @@ export type CreateClipboardInput = {
 
 export async function createClipboard(input: CreateClipboardInput) {
   try {
+    const auth = getAuth(app)
+    const token = await auth.currentUser?.getIdToken()
+
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`
+    }
+
     const res = await fetch(joinUrl(API_BASE_URL, '/api/clipboards'), {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify(input)
     })
 
