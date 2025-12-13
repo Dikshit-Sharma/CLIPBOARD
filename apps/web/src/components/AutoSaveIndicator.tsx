@@ -5,10 +5,9 @@ type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 
 interface AutoSaveIndicatorProps {
   status: SaveStatus
-  lastSavedAt?: Date | null
 }
 
-export function AutoSaveIndicator({ status, lastSavedAt }: AutoSaveIndicatorProps) {
+export function AutoSaveIndicator({ status }: AutoSaveIndicatorProps) {
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
