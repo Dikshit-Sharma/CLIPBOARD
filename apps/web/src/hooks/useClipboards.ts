@@ -45,6 +45,7 @@ export function useClipboards() {
     const unsubClipboards = onSnapshot(q,
       (snapshot) => {
         const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Clipboard))
+        console.log("Found clipboards:", data.length)
         setClipboards(data)
       },
       (error) => {
@@ -57,6 +58,7 @@ export function useClipboards() {
       collection(db, `users/${user.uid}/folders`),
       (snapshot) => {
         const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Folder))
+        console.log("Found folders:", data.length)
         setFolders(data)
       },
       (error) => {
@@ -68,6 +70,7 @@ export function useClipboards() {
     const unsubFavorites = onSnapshot(
       collection(db, `users/${user.uid}/favorites`),
       (snapshot) => {
+        console.log("Found favorites:", snapshot.size)
         setFavorites(new Set(snapshot.docs.map(d => d.id)))
       },
       (error) => {
@@ -79,6 +82,7 @@ export function useClipboards() {
     const unsubArchived = onSnapshot(
       collection(db, `users/${user.uid}/archived`),
       (snapshot) => {
+        console.log("Found archived:", snapshot.size)
         setArchived(new Set(snapshot.docs.map(d => d.id)))
       },
       (error) => {

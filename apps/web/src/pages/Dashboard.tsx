@@ -227,8 +227,11 @@ export function Dashboard() {
                       onClick={() => nav(`/c/${cb.id}?token=${cb.readTokenHash}`)}
                     >
                       {/* Content Preview */}
-                      <div className={`${view === 'grid' ? 'flex-1 mb-2 mask-linear-fade' : ''} overflow-hidden font-mono text-xs text-text-muted`}>
-                         <div dangerouslySetInnerHTML={{ __html: cb.contentHtml || '<span class="italic opacity-50">Empty</span>' }} />
+                      {/* Content Preview */}
+                      <div className={`${view === 'grid' ? 'flex-1 mb-2 mask-linear-fade' : ''} overflow-hidden`}>
+                        <div className="font-mono text-xs text-text-muted bg-surface-900/50 p-2 rounded border border-white/5 whitespace-pre-wrap break-all h-full">
+                           {cb.contentHtml ? cb.contentHtml.replace(/<[^>]*>/g, '').slice(0, 300) : <span className="italic opacity-50">Empty</span>}
+                        </div>
                       </div>
 
                       {/* Meta */}
