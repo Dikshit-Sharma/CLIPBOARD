@@ -161,7 +161,10 @@ export function ClipboardPage() {
       setState((prev) => {
         if (!prev) return prev
         if (new Date(p.contentUpdatedAt).getTime() < new Date(prev.contentUpdatedAt).getTime()) return prev
-        return { ...prev, contentHtml: p.html, contentUpdatedAt: p.contentUpdatedAt }
+        const newState = { ...prev, contentHtml: p.html, contentUpdatedAt: p.contentUpdatedAt }
+        // Update cache with the new content to prevent data loss on refresh
+        setCachedState(id, newState)
+        return newState
       })
     })
 
