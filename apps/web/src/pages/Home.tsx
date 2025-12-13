@@ -1,20 +1,26 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMutation } from '@tanstack/react-query'
-import { Clipboard, Search, Shield, Timer, Sparkles, Clock, ArrowRight, Zap, Trash2, X, Github } from 'lucide-react'
+import { Clipboard, Search, Shield, Timer, Sparkles, Clock, ArrowRight, Zap, Trash2, X, Github, LogIn } from 'lucide-react'
 import { Button, Card, Input, Modal } from '../components/ui'
 import { createClipboard } from '../services/api'
 import { parseClipboardInput } from '../lib/parseClipboardInput'
 import { clearRecents, loadRecents, saveRecent, removeRecent } from '../lib/recent'
 import { storeTokens } from '../lib/tokens'
 import { trackClipboardCreated, trackClipboardOpened } from '../lib/analytics'
+import { useAuth } from '../lib/auth'
+import { AuthModal } from '../components/AuthModal'
+import { UserMenu } from '../components/UserMenu'
+
 
 export function Home() {
   const nav = useNavigate()
+  const { user, loading } = useAuth()
 
   const [openInput, setOpenInput] = useState('')
   const [query, setQuery] = useState('')
   const [createOpen, setCreateOpen] = useState(false)
+  const [authOpen, setAuthOpen] = useState(false)
   const [recentsKey, setRecentsKey] = useState(0) // Force re-render when recents change
 
   const [expiresIn, setExpiresIn] = useState<'1h' | '1d' | 'never'>('never')
@@ -95,6 +101,19 @@ export function Home() {
               <Github className="h-4 w-4" />
               <span className="hidden sm:inline">GitHub</span>
             </a>
+
+            {/* Auth Section */}
+            {loading ? (
+              <div className="w-8 h-8 rounded-full bg-surface-800 animate-pulse" />
+            ) : user ? (
+              <UserMenu />
+            ) : (
+              <Button variant="ghost" onClick={() => setAuthOpen(true)}>
+                <LogIn className="h-4 w-4" />
+                <span className="hidden sm:inline">Sign In</span>
+              </Button>
+            )}
+
             <Button onClick={() => setCreateOpen(true)} className="shadow-lg hover:shadow-xl">
               <Sparkles className="h-4 w-4" />
               Create New Clipboard
@@ -102,6 +121,10 @@ export function Home() {
           </div>
         </div>
       </header>
+
+      {/* Auth Modal */}
+      <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
+
 
       {/* Main Content Grid */}
       <div className="grid gap-6 lg:grid-cols-2">

@@ -35,13 +35,14 @@ export function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
   )
 }
 
-export function Card(props: PropsWithChildren<{ className?: string }>) {
+export function Card(props: PropsWithChildren<{ className?: string; onClick?: () => void }>) {
   return (
     <div
       className={clsx(
         'rounded-2xl bg-gradient-to-br from-surface-900/90 to-surface-800/80 ring-1 ring-white/10 shadow-lg hover:shadow-xl transition-all duration-300',
         props.className
       )}
+      onClick={props.onClick}
     >
       {props.children}
     </div>
