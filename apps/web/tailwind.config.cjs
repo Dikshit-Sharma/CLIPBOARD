@@ -6,22 +6,22 @@ module.exports = {
     extend: {
       colors: {
         bg: {
-          950: '#050608',
-          900: '#0b0d10',
-          800: '#11151b'
+          950: 'var(--bg-primary)',
+          900: 'var(--bg-secondary)',
+          800: 'var(--bg-tertiary)'
         },
         surface: {
-          900: '#0f1318',
-          800: '#151b22',
-          700: '#1b2430'
+          900: 'var(--bg-secondary)',
+          800: 'var(--bg-surface)',
+          700: 'var(--bg-surface-hover)'
         },
         text: {
-          primary: '#e5e7eb',
-          muted: '#9ca3af'
+          primary: 'var(--text-primary)',
+          muted: 'var(--text-muted)'
         },
         accent: {
-          400: '#60a5fa',
-          500: '#3b82f6'
+          400: 'var(--accent-light)',
+          500: 'var(--accent-color)'
         }
       },
       animation: {

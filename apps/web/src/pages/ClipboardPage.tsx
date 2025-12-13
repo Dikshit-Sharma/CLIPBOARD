@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { AlertTriangle, ArrowLeft, Copy, Link2, Lock, Settings, Share2, Trash2, Github, QrCode } from 'lucide-react'
+import { AlertTriangle, ArrowLeft, Copy, Link2, Lock, Settings, Share2, Trash2, Github, QrCode, Shield, LogIn } from 'lucide-react'
 import { AutoSaveIndicator } from '../components/AutoSaveIndicator'
 import { Button, Card, Input, Modal } from '../components/ui'
 import { ApiError, authClipboard, getClipboardMeta, getClipboardState, updateClipboardSettings, deleteClipboard } from '../services/api'
@@ -12,6 +12,7 @@ import { ActivityFeed } from '../components/ActivityFeed'
 import { PresenceBar } from '../components/PresenceBar'
 import { QRCodeModal } from '../components/QRCodeModal'
 import { KeyboardShortcutsModal, useKeyboardShortcutHelp } from '../components/KeyboardShortcutsModal'
+import { useAuth } from '../lib/auth'
 import { getStoredTokens } from '../lib/tokens'
 import { saveRecent, removeRecent } from '../lib/recent'
 import { getCachedState, setCachedState } from '../lib/cache'
@@ -21,6 +22,7 @@ export function ClipboardPage() {
   const { id } = useParams<{ id: string }>()
   const [sp] = useSearchParams()
   const nav = useNavigate()
+  const { user, loading } = useAuth()
 
   const token = sp.get('token') || undefined
 
@@ -383,6 +385,22 @@ export function ClipboardPage() {
 
         {/* Sidebar */}
         <div className="space-y-6">
+          {!loading && !user && (
+            <Card className="p-6 border-accent-500/20 bg-gradient-to-br from-surface-900 to-accent-500/5 text-center">
+              <div className="rounded-full bg-accent-500/10 p-3 inline-block mb-3 ring-1 ring-accent-500/20">
+                <Shield className="h-6 w-6 text-accent-400" />
+              </div>
+              <h3 className="font-bold text-text-primary mb-2">Unlock More Features</h3>
+              <p className="text-sm text-text-muted mb-4">
+                Sign in to save this clipboard to your dashboard and access it from any device.
+              </p>
+              <Button onClick={() => nav('/')} className="w-full">
+                <LogIn className="h-4 w-4" />
+                Sign In
+              </Button>
+            </Card>
+          )}
+
           <Card className="p-6">
             <div className="flex items-center gap-2 mb-4 pb-4 border-b border-white/10">
               <div className="h-8 w-1 rounded-full bg-gradient-to-b from-accent-500 to-accent-400"></div>
