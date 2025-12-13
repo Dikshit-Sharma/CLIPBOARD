@@ -103,7 +103,9 @@ export function useClipboards() {
   // Actions
   const createFolder = async (name: string, color?: string) => {
     if (!user || !db) return
-    await addDoc(collection(db, `users/${user.uid}/folders`), { name, color })
+    const payload: any = { name }
+    if (color) payload.color = color
+    await addDoc(collection(db, `users/${user.uid}/folders`), payload)
   }
 
   const deleteFolder = async (folderId: string) => {
