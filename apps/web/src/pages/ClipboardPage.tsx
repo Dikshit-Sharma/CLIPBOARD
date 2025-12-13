@@ -138,21 +138,13 @@ export function ClipboardPage() {
         activity: s.activity,
         settings: s.settings
       }
-      // Track clipboard opened when state is received
-      const isFirstLoad = !state
-      if (isFirstLoad && id) {
-        trackClipboardOpened(id, token ? 'link' : 'code')
-      }
-      // Only update if socket state is newer or if we don't have state yet
+      // Always accept authoritative server state
       setState((prev) => {
-        if (!prev) return newState
-        // Prefer socket state if it's newer
-        const socketTime = new Date(s.contentUpdatedAt).getTime()
-        const prevTime = new Date(prev.contentUpdatedAt).getTime()
-        if (socketTime >= prevTime) {
-          return newState
+        // Track clipboard opened on first actual state
+        if (!prev && id) {
+          trackClipboardOpened(id, token ? 'link' : 'code')
         }
-        return prev
+        return newState
       })
       // Cache the state to reduce future reads
       setCachedState(id, newState)
