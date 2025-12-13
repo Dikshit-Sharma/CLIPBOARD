@@ -1,16 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { AlertTriangle, ArrowLeft, Copy, Link2, Lock, Settings, Share2 } from 'lucide-react'
+import { AlertTriangle, ArrowLeft, Copy, Link2, Lock, Settings, Share2, Trash2 } from 'lucide-react'
 import { Button, Card, Input, Modal } from '../components/ui'
-import { ApiError, authClipboard, getClipboardMeta, getClipboardState, updateClipboardSettings } from '../services/api'
+import { ApiError, authClipboard, getClipboardMeta, getClipboardState, updateClipboardSettings, deleteClipboard } from '../services/api'
 import { createClipboardSocket, type PresenceUser } from '../services/realtime'
 import type { ClipboardSettings, ClipboardState, ClipboardRole, ClipboardActivity } from '../types'
 import { RichEditor } from '../components/RichEditor'
 import { ActivityFeed } from '../components/ActivityFeed'
 import { PresenceBar } from '../components/PresenceBar'
 import { getStoredTokens } from '../lib/tokens'
-import { saveRecent } from '../lib/recent'
+import { saveRecent, removeRecent } from '../lib/recent'
 import { getCachedState, setCachedState } from '../lib/cache'
 
 export function ClipboardPage() {
@@ -25,6 +25,7 @@ export function ClipboardPage() {
 
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [shareOpen, setShareOpen] = useState(false)
+  const [deleteOpen, setDeleteOpen] = useState(false)
 
   const [sessionToken, setSessionToken] = useState<string | null>(null)
   const [role, setRole] = useState<ClipboardRole>('read')
@@ -194,6 +195,17 @@ export function ClipboardPage() {
     }
   })
 
+  const deleteMut = useMutation({
+    mutationFn: () => {
+      if (!id || !sessionToken) throw new Error('Missing clipboard ID or session token')
+      return deleteClipboard(id, sessionToken)
+    },
+    onSuccess: () => {
+      removeRecent(id!)
+      nav('/')
+    }
+  })
+
   const copyToClipboard = async (text: string) => {
     await navigator.clipboard.writeText(text)
   }
@@ -203,15 +215,22 @@ export function ClipboardPage() {
   if (metaQ.isError) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-10">
-        <Card className="p-6">
-          <div className="flex items-center gap-2 text-red-400">
-            <AlertTriangle className="h-5 w-5" />
-            Failed to load clipboard.
+        <Card className="p-8">
+          <div className="flex items-center gap-3 text-red-400 mb-4">
+            <div className="rounded-full bg-red-500/20 p-2">
+              <AlertTriangle className="h-6 w-6" />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold">Failed to load clipboard</h2>
+              <p className="text-sm text-text-muted mt-1">There was an error loading this clipboard.</p>
+            </div>
           </div>
-          <pre className="mt-3 whitespace-pre-wrap text-xs text-text-muted">{(metaQ.error as Error).message}</pre>
-          <div className="mt-4">
-            <Button variant="ghost" onClick={() => nav('/')}>
-              <ArrowLeft className="h-4 w-4" /> Back
+          <pre className="mt-4 p-4 rounded-xl bg-surface-800 whitespace-pre-wrap text-xs text-text-muted ring-1 ring-white/10">
+            {(metaQ.error as Error).message}
+          </pre>
+          <div className="mt-6">
+            <Button variant="ghost" onClick={() => nav('/')} className="hover:bg-surface-700">
+              <ArrowLeft className="h-4 w-4" /> Back to Home
             </Button>
           </div>
         </Card>
@@ -220,70 +239,94 @@ export function ClipboardPage() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" onClick={() => nav('/')}
-            aria-label="Back"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Home
-          </Button>
-          <div className="rounded-xl bg-surface-900 px-3 py-2 ring-1 ring-white/10">
-            <div className="text-xs text-text-muted">Clipboard code</div>
-            <div className="font-mono text-sm">{id}</div>
+    <div className="mx-auto max-w-7xl px-4 py-6">
+      {/* Enhanced Header */}
+      <div className="mb-6 rounded-2xl bg-gradient-to-br from-surface-900/90 via-surface-800/80 to-surface-900/90 p-6 ring-1 ring-white/10 shadow-xl">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" onClick={() => nav('/')} aria-label="Back" className="hover:bg-surface-700">
+              <ArrowLeft className="h-4 w-4" />
+              <span className="hidden sm:inline">Home</span>
+            </Button>
+            <div className="rounded-xl bg-gradient-to-br from-accent-500/10 to-accent-400/5 px-4 py-2.5 ring-1 ring-accent-500/20">
+              <div className="text-xs font-medium text-accent-400/80 uppercase tracking-wide">Clipboard ID</div>
+              <div className="font-mono text-base font-semibold text-text-primary mt-0.5">{id}</div>
+            </div>
+            <Button variant="ghost" onClick={() => copyToClipboard(id)} aria-label="Copy code" className="hover:bg-surface-700">
+              <Copy className="h-4 w-4" />
+              <span className="hidden sm:inline">Copy ID</span>
+            </Button>
           </div>
-          <Button variant="ghost" onClick={() => copyToClipboard(id)} aria-label="Copy code">
-            <Copy className="h-4 w-4" />
-            Copy
-          </Button>
-        </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <PresenceBar users={presence} />
+          <div className="flex flex-wrap items-center gap-2">
+            <PresenceBar users={presence} />
 
-          <Button
-            variant="ghost"
-            onClick={() => copyToClipboard(shareLinks?.current || downloadLink)}
-            aria-label="Copy current link"
-          >
-            <Link2 className="h-4 w-4" />
-            Copy link
-          </Button>
+            <Button
+              variant="ghost"
+              onClick={() => copyToClipboard(shareLinks?.current || downloadLink)}
+              aria-label="Copy current link"
+              className="hover:bg-surface-700"
+            >
+              <Link2 className="h-4 w-4" />
+              <span className="hidden sm:inline">Copy link</span>
+            </Button>
 
-          <Button variant="ghost" onClick={() => setShareOpen(true)} aria-label="Share">
-            <Share2 className="h-4 w-4" />
-            Share
-          </Button>
+            <Button variant="ghost" onClick={() => setShareOpen(true)} aria-label="Share" className="hover:bg-surface-700">
+              <Share2 className="h-4 w-4" />
+              <span className="hidden sm:inline">Share</span>
+            </Button>
 
           {isWrite ? (
-            <Button variant="ghost" onClick={() => setSettingsOpen(true)} aria-label="Settings">
-              <Settings className="h-4 w-4" />
-              Settings
-            </Button>
+            <>
+              <Button variant="ghost" onClick={() => setSettingsOpen(true)} aria-label="Settings" className="hover:bg-surface-700">
+                <Settings className="h-4 w-4" />
+                <span className="hidden sm:inline">Settings</span>
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={() => setDeleteOpen(true)}
+                aria-label="Delete clipboard"
+                className="hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/20"
+              >
+                <Trash2 className="h-4 w-4" />
+                <span className="hidden sm:inline">Delete</span>
+              </Button>
+            </>
           ) : (
-            <div className="flex items-center gap-2 rounded-xl bg-surface-900 px-3 py-2 text-xs text-text-muted ring-1 ring-white/10">
-              <Lock className="h-4 w-4" /> Read-only
+            <div className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-surface-800/80 to-surface-700/60 px-3 py-2 text-xs text-text-muted ring-1 ring-white/10">
+              <Lock className="h-4 w-4 text-accent-400" />
+              <span className="font-medium">Read-only</span>
             </div>
           )}
+          </div>
         </div>
       </div>
 
       {error ? (
-        <div className="mt-4 rounded-xl bg-red-500/10 px-3 py-2 text-sm text-red-300 ring-1 ring-red-500/20">
-          {error}
+        <div className="mb-4 rounded-xl bg-gradient-to-r from-red-500/10 to-red-600/10 px-4 py-3 text-sm text-red-300 ring-1 ring-red-500/20 shadow-lg animate-slide-up">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4" />
+            {error}
+          </div>
         </div>
       ) : null}
 
-      <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_360px]">
-        <Card className="p-4">
-          <div className="flex items-center justify-between gap-2">
-            <div className="text-sm font-medium">Shared content</div>
-            {state ? (
-              <div className="text-xs text-text-muted">Last update: {new Date(state.contentUpdatedAt).toLocaleString()}</div>
-            ) : null}
+      <div className="grid gap-6 lg:grid-cols-[1fr_400px]">
+        {/* Main Content Card */}
+        <Card className="p-6">
+          <div className="flex items-center justify-between gap-2 mb-4 pb-4 border-b border-white/10">
+            <div>
+              <h2 className="text-lg font-semibold text-text-primary">Shared Content</h2>
+              {state ? (
+                <div className="text-xs text-text-muted mt-1">
+                  Last updated: {new Date(state.contentUpdatedAt).toLocaleString()}
+                </div>
+              ) : (
+                <div className="text-xs text-text-muted mt-1">Loading content...</div>
+              )}
+            </div>
           </div>
-          <div className="mt-3">
+          <div className="mt-4">
             <RichEditor
               html={state?.contentHtml || '<p></p>'}
               editable={isWrite}
@@ -295,12 +338,14 @@ export function ClipboardPage() {
           </div>
         </Card>
 
-        <div className="space-y-4">
-          <Card className="p-4">
-            <div className="text-sm font-medium">Activity</div>
-            <div className="mt-3">
-              <ActivityFeed items={state?.activity || []} />
+        {/* Sidebar */}
+        <div className="space-y-6">
+          <Card className="p-6">
+            <div className="flex items-center gap-2 mb-4 pb-4 border-b border-white/10">
+              <div className="h-8 w-1 rounded-full bg-gradient-to-b from-accent-500 to-accent-400"></div>
+              <h3 className="text-base font-semibold text-text-primary">Activity Feed</h3>
             </div>
+            <ActivityFeed items={state?.activity || []} />
           </Card>
         </div>
       </div>
@@ -363,6 +408,45 @@ export function ClipboardPage() {
         onSave={(input) => settingsMut.mutate(input)}
         busy={settingsMut.isPending}
       />
+
+      <Modal open={deleteOpen} title="Delete Clipboard" onClose={() => setDeleteOpen(false)}>
+        <div className="space-y-4">
+          <div className="rounded-xl bg-red-500/10 p-4 ring-1 ring-red-500/20">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="h-5 w-5 text-red-400 mt-0.5" />
+              <div>
+                <h3 className="font-semibold text-red-300 mb-1">Warning: This action cannot be undone</h3>
+                <p className="text-sm text-text-muted">
+                  Deleting this clipboard will permanently remove all content, settings, and activity. This action cannot be reversed.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center justify-end gap-3">
+            <Button variant="ghost" onClick={() => setDeleteOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="danger"
+              onClick={() => deleteMut.mutate()}
+              disabled={deleteMut.isPending}
+              className="min-w-[100px]"
+            >
+              {deleteMut.isPending ? 'Deleting…' : (
+                <>
+                  <Trash2 className="h-4 w-4" />
+                  Delete
+                </>
+              )}
+            </Button>
+          </div>
+          {deleteMut.isError && (
+            <div className="rounded-xl bg-red-500/10 px-4 py-3 text-sm text-red-300 ring-1 ring-red-500/20">
+              Failed to delete: {(deleteMut.error as Error).message}
+            </div>
+          )}
+        </div>
+      </Modal>
     </div>
   )
 }

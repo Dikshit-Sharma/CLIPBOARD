@@ -2,7 +2,7 @@ import { Router, type NextFunction, type Request, type Response } from 'express'
 import { nanoid } from 'nanoid'
 import bcrypt from 'bcryptjs'
 import { z } from 'zod'
-import { getClipboard, createClipboard, updateClipboard } from '../db.js'
+import { getClipboard, createClipboard, updateClipboard, deleteClipboard } from '../db.js'
 import type { Clipboard, ClipboardActivity, ClipboardRole } from '../types.js'
 import { generateToken, sha256Hex, signSession, verifySession, type ClipboardSession } from '../auth.js'
 import { emitClipboardContentUpdated, emitClipboardPresence } from '../socket.js'
@@ -219,6 +219,21 @@ clipboardsRouter.post('/:id/content', requireSession, async (req: Request, res: 
   if (!updated) return res.status(500).json({ error: 'Failed to update' })
 
   emitClipboardContentUpdated(id, { html: updated.contentHtml, contentUpdatedAt: updated.contentUpdatedAt })
+
+  res.json({ ok: true })
+})
+
+// Delete clipboard endpoint
+clipboardsRouter.delete('/:id', requireSession, async (req: Request, res: Response) => {
+  const authed = req as AuthedRequest
+  const id = req.params.id
+  if (authed.session.clipboardId !== id) return res.status(403).json({ error: 'Forbidden' })
+  if (authed.session.role !== 'write') return res.status(403).json({ error: 'Read-only' })
+
+  const cb = await getClipboard(id)
+  if (!cb) return res.status(404).json({ error: 'Not found' })
+
+  await deleteClipboard(id)
 
   res.json({ ok: true })
 })

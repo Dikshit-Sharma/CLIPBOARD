@@ -27,3 +27,12 @@ export function saveRecent(id: string) {
 export function clearRecents() {
   localStorage.removeItem(KEY)
 }
+
+export function removeRecent(id: string) {
+  const list = loadRecents().filter((r) => r.id !== id)
+  if (list.length === 0) {
+    localStorage.removeItem(KEY)
+  } else {
+    localStorage.setItem(KEY, JSON.stringify(list))
+  }
+}

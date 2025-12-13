@@ -104,3 +104,17 @@ export async function updateClipboardSettings(id: string, sessionToken: string, 
     protected: boolean
   }
 }
+
+export async function deleteClipboard(id: string, sessionToken: string) {
+  const res = await fetch(joinUrl(API_BASE_URL, `/api/clipboards/${id}`), {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${sessionToken}`
+    }
+  })
+  if (!res.ok) {
+    const errorText = await res.text()
+    throw new Error(errorText || `HTTP ${res.status}`)
+  }
+  return (await res.json()) as { ok: true }
+}
