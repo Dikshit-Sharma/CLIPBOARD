@@ -6,7 +6,6 @@ import {
   Archive,
   Trash2,
   Shield,
-  MoreVertical,
   Check,
   Ban
 } from 'lucide-react'

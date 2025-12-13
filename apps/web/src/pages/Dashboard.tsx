@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-  LayoutGrid, List as ListIcon, Plus, Search
+  LayoutGrid, List as ListIcon, Plus, Search,
+  Clock, Star, Archive, Folder, Trash2
 } from 'lucide-react'
 import { Button, Input, Modal } from '../components/ui'
 import { ClipboardCard } from '../components/ClipboardCard'
@@ -10,7 +11,8 @@ import { useAuth } from '../lib/auth'
 
 export function Dashboard() {
   const nav = useNavigate()
-  const { user } = useAuth()
+  // user is not used
+  useAuth()
 
   const {
     clipboards, folders, favorites, archived, loading: isLoading,
@@ -23,7 +25,6 @@ export function Dashboard() {
   const [activeFolderId, setActiveFolderId] = useState<string | null>(null)
   const [isNewFolderOpen, setIsNewFolderOpen] = useState(false)
   const [newFolderName, setNewFolderName] = useState('')
-  const [createFolderError, setCreateFolderError] = useState('')
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -58,9 +59,9 @@ export function Dashboard() {
       return favorites.has(cb.id)
     }
 
-    if (selectedFolder) {
+    if (activeFolderId) {
       // In a folder view
-      return cb.folderId === selectedFolder
+      return cb.folderId === activeFolderId
     }
 
     // 'all' view
@@ -85,11 +86,7 @@ export function Dashboard() {
     }
   }
 
-  const handleDragStart = (e: React.DragEvent, clipboardId: string) => {
-    e.dataTransfer.setData('text/plain', clipboardId)
-  }
-
-  if (loading) {
+  if (isLoading) {
     return <div className="flex items-center justify-center h-screen text-text-muted">Loading dashboard...</div>
   }
 
@@ -99,23 +96,23 @@ export function Dashboard() {
       <div className="w-64 border-r border-white/10 p-4 flex flex-col gap-6 overflow-y-auto">
         <div className="space-y-1">
           <Button
-            variant={activeTab === 'all' && !selectedFolder ? 'secondary' : 'ghost'}
+            variant={activeTab === 'all' && !activeFolderId ? 'secondary' : 'ghost'}
             className="w-full justify-start gap-3"
-            onClick={() => { setActiveTab('all'); setSelectedFolder(null) }}
+            onClick={() => { setActiveTab('all'); setActiveFolderId(null) }}
           >
             <Clock className="h-4 w-4" /> All Clipboards
           </Button>
           <Button
             variant={activeTab === 'favorites' ? 'secondary' : 'ghost'}
             className="w-full justify-start gap-3"
-            onClick={() => { setActiveTab('favorites'); setSelectedFolder(null) }}
+            onClick={() => { setActiveTab('favorites'); setActiveFolderId(null) }}
           >
             <Star className="h-4 w-4" /> Favorites
           </Button>
           <Button
             variant={activeTab === 'archived' ? 'secondary' : 'ghost'}
             className="w-full justify-start gap-3"
-            onClick={() => { setActiveTab('archived'); setSelectedFolder(null) }}
+            onClick={() => { setActiveTab('archived'); setActiveFolderId(null) }}
           >
             <Archive className="h-4 w-4" /> Archived
           </Button>
@@ -135,9 +132,9 @@ export function Dashboard() {
               onDrop={(e) => handleDrop(e, folder.id)}
             >
               <Button
-                variant={selectedFolder === folder.id ? 'secondary' : 'ghost'}
+                variant={activeFolderId === folder.id ? 'secondary' : 'ghost'}
                 className="w-full justify-start gap-3 group relative"
-                onClick={() => { setSelectedFolder(folder.id); setActiveTab('all') }}
+                onClick={() => { setActiveFolderId(folder.id); setActiveTab('all') }}
               >
                 <Folder className="h-4 w-4 text-accent-500" />
                 <span className="truncate flex-1 text-left">{folder.name}</span>
@@ -163,7 +160,7 @@ export function Dashboard() {
       <div className="flex-1 flex flex-col min-w-0">
         <div className="p-6 border-b border-white/10 flex items-center justify-between gap-4">
           <h1 className="text-xl font-bold flex items-center gap-2">
-            {selectedFolder ? folders.find(f => f.id === selectedFolder)?.name :
+            {activeFolderId ? folders.find(f => f.id === activeFolderId)?.name :
              activeTab === 'favorites' ? 'Favorites' :
              activeTab === 'archived' ? 'Archived' : 'All Clipboards'}
           </h1>
