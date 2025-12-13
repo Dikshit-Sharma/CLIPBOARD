@@ -13,6 +13,7 @@ export type ClipboardActivity = {
 
 export type Clipboard = {
   id: string
+  ownerId?: string | null
   createdAt: string
   expiresAt: string | null
   passwordHash: string | null
@@ -22,4 +23,8 @@ export type Clipboard = {
   contentHtml: string
   contentUpdatedAt: string
   activity: ClipboardActivity[]
+  // User-specific fields (handled by client, but good to have in type if we sync)
+  folderId?: string | null
+  isFavorite?: boolean
+  isArchived?: boolean
 }

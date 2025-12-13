@@ -124,7 +124,7 @@ export function attachSocket(server: http.Server) {
               const contentUpdatedAt = nowIso()
               const newActivity = {
                 id: nanoid(10),
-                type: 'content-updated',
+                type: 'content-updated' as const,
                 at: contentUpdatedAt,
                 summary: 'Content updated'
               }
@@ -176,7 +176,7 @@ export function attachSocket(server: http.Server) {
               const contentUpdatedAt = nowIso()
               const newActivity = {
                 id: nanoid(10),
-                type: 'content-updated',
+                type: 'content-updated' as const,
                 at: contentUpdatedAt,
                 summary: 'Content updated'
               }

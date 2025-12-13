@@ -24,3 +24,16 @@ export function verifySession(token: string): ClipboardSession {
   const secret = process.env.JWT_SECRET || 'dev-insecure-secret'
   return jwt.verify(token, secret) as ClipboardSession
 }
+
+import admin from 'firebase-admin'
+
+export async function verifyIdToken(token: string): Promise<string | null> {
+  if (!token) return null
+  try {
+    const decoded = await admin.auth().verifyIdToken(token)
+    return decoded.uid
+  } catch (error) {
+    // console.error('Token verification failed:', error)
+    return null
+  }
+}

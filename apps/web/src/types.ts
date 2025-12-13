@@ -38,3 +38,20 @@ export type ClipboardState = {
   activity: ClipboardActivity[]
   settings: ClipboardSettings
 }
+
+export type Clipboard = {
+  id: string
+  ownerId?: string | null
+  createdAt: string
+  expiresAt: string | null
+  passwordHash: string | null
+  readTokenHash: string
+  writeTokenHash: string
+  settings: ClipboardSettings
+  contentHtml: string
+  contentUpdatedAt: string
+  activity: ClipboardActivity[]
+  folderId?: string | null
+  isFavorite?: boolean
+  isArchived?: boolean
+}

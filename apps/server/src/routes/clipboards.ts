@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs'
 import { z } from 'zod'
 import { getClipboard, createClipboard, updateClipboard, deleteClipboard } from '../db.js'
 import type { Clipboard, ClipboardActivity, ClipboardRole } from '../types.js'
-import { generateToken, sha256Hex, signSession, verifySession, type ClipboardSession } from '../auth.js'
+import { generateToken, sha256Hex, signSession, verifySession, verifyIdToken, type ClipboardSession } from '../auth.js'
 import { emitClipboardContentUpdated, emitClipboardPresence } from '../socket.js'
 
 export const clipboardsRouter = Router()
@@ -43,6 +43,13 @@ const createSchema = z.object({
 clipboardsRouter.post('/', async (req, res) => {
   try {
     const body = createSchema.parse(req.body || {})
+    const authHeader = req.headers.authorization
+    let ownerId: string | null = null
+
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.split(' ')[1]
+      ownerId = await verifyIdToken(token)
+    }
 
     const id = nanoid(8)
     const readToken = generateToken(18)
@@ -52,6 +59,7 @@ clipboardsRouter.post('/', async (req, res) => {
 
     const cb: Clipboard = {
       id,
+      ownerId,
       createdAt: nowIso(),
       expiresAt: computeExpiresAt(body.expiresIn),
       passwordHash,
@@ -78,7 +86,7 @@ clipboardsRouter.post('/', async (req, res) => {
   } catch (error) {
     console.error('Error creating clipboard:', error)
     if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: 'Invalid request', details: error.errors })
+      return res.status(400).json({ error: 'Invalid request', details: error.issues })
     }
     const message = error instanceof Error ? error.message : 'Failed to create clipboard'
     res.status(500).json({ error: message })
