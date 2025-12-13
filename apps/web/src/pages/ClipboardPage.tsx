@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { AlertTriangle, ArrowLeft, Copy, Link2, Lock, Settings, Share2, Trash2, Github, QrCode } from 'lucide-react'
+import { AutoSaveIndicator } from '../components/AutoSaveIndicator'
 import { Button, Card, Input, Modal } from '../components/ui'
 import { ApiError, authClipboard, getClipboardMeta, getClipboardState, updateClipboardSettings, deleteClipboard } from '../services/api'
 import { createClipboardSocket, type PresenceUser } from '../services/realtime'
@@ -29,6 +30,7 @@ export function ClipboardPage() {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [shareOpen, setShareOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [qrOpen, setQrOpen] = useState(false)
   const [keyboardHelpOpen, setKeyboardHelpOpen] = useState(false)
 
@@ -134,7 +136,10 @@ export function ClipboardPage() {
     const socket = createClipboardSocket()
     socketRef.current = socket
 
-    socket.on('clipboard:error', (p) => setError(p.message))
+    socket.on('clipboard:error', (p) => {
+      setError(p.message)
+      setSaveStatus('error')
+    })
     socket.on('presence:update', (p) => setPresence(p.users))
     socket.on('clipboard:state', (s) => {
       setRole(s.role)
@@ -157,6 +162,7 @@ export function ClipboardPage() {
       setCachedState(id, newState)
     })
     socket.on('clipboard:content:updated', (p) => {
+      setSaveStatus('saved')
       setState((prev) => {
         if (!prev) return prev
         if (new Date(p.contentUpdatedAt).getTime() < new Date(prev.contentUpdatedAt).getTime()) return prev
@@ -354,6 +360,7 @@ export function ClipboardPage() {
                 <div className="text-xs text-text-muted mt-1">Loading content...</div>
               )}
             </div>
+            <AutoSaveIndicator status={saveStatus} />
           </div>
           <div className="mt-4">
             <RichEditor
@@ -366,9 +373,10 @@ export function ClipboardPage() {
                   trackContentUpdated(id, html.length)
                 }
               }}
-              onLocalUpdate={(html) =>
+              onLocalUpdate={(html) => {
+                setSaveStatus('saving')
                 setState((prev) => (prev ? { ...prev, contentHtml: html, contentUpdatedAt: new Date().toISOString() } : prev))
-              }
+              }}
             />
           </div>
         </Card>
