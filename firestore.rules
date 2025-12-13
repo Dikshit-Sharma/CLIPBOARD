@@ -6,29 +6,32 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // Helper to check if user owns the document
+    // Helper to check if user owns the document (by verifying auth.uid matches userId in path)
     function isOwner(userId) {
       return request.auth.uid == userId;
     }
 
     // Clipboards Collection
     match /clipboards/{clipboardId} {
-      // Allow read if user is owner (or if you want public read, adjust accordingly)
-      // For dashboard, we only query owned clipboards.
+      // Check ownerId field on the document
       allow read: if isAuthenticated() && resource.data.ownerId == request.auth.uid;
-
-      // Allow create if auth matches ownerId
       allow create: if isAuthenticated() && request.resource.data.ownerId == request.auth.uid;
-
-      // Allow update if owner (e.g. changing folderId)
-      allow update: if isAuthenticated() && resource.data.ownerId == request.auth.uid;
-
-      // Allow delete if owner
-      allow delete: if isAuthenticated() && resource.data.ownerId == request.auth.uid;
+      allow update, delete: if isAuthenticated() && resource.data.ownerId == request.auth.uid;
     }
 
-    // User Sub-collections (Folders, Favorites, Archived)
-    match /users/{userId}/{document=**} {
+    // Explicit User Sub-collections
+    match /users/{userId}/folders/{folderId} {
+      allow read, write: if isOwner(userId);
+    }
+    match /users/{userId}/favorites/{favId} {
+      allow read, write: if isOwner(userId);
+    }
+    match /users/{userId}/archived/{archId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // Catch-all for other subcollections (fallback)
+    match /users/{userId}/{restOfPath=**} {
       allow read, write: if isOwner(userId);
     }
   }

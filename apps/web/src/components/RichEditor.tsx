@@ -54,6 +54,7 @@ export function RichEditor(props: {
         heading: false,
         bulletList: false,
         orderedList: false,
+        listItem: false,
         blockquote: false,
         strike: false
       }),
