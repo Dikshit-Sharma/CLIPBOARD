@@ -20,7 +20,21 @@ export type ClipboardSocket = Socket<
 
 export function createClipboardSocket() {
   return io(SOCKET_URL, {
-    transports: ['websocket'],
-    autoConnect: true
+    // Allow polling first (better for Citrix/proxies), then upgrade to websocket
+    transports: ['polling', 'websocket'],
+    // Start with polling for better Citrix compatibility
+    upgrade: true,
+    // Increase connection timeout for slow Citrix networks
+    timeout: 20000, // 20 seconds (default is 20s, but explicit helps)
+    // Enable reconnection with exponential backoff
+    reconnection: true,
+    reconnectionAttempts: 5,
+    reconnectionDelay: 1000, // Start with 1 second
+    reconnectionDelayMax: 5000, // Max 5 seconds between retries
+    // Randomize reconnection delay to avoid thundering herd
+    randomizationFactor: 0.5,
+    autoConnect: true,
+    // Force new connection (helps with Citrix session issues)
+    forceNew: false
   }) as unknown as ClipboardSocket
 }

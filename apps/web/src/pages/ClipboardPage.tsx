@@ -3,7 +3,7 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { AlertTriangle, ArrowLeft, Copy, Link2, Lock, Settings, Share2 } from 'lucide-react'
 import { Button, Card, Input, Modal } from '../components/ui'
-import { ApiError, authClipboard, getClipboardMeta, updateClipboardSettings } from '../services/api'
+import { ApiError, authClipboard, getClipboardMeta, getClipboardState, updateClipboardSettings } from '../services/api'
 import { createClipboardSocket, type PresenceUser } from '../services/realtime'
 import type { ClipboardSettings, ClipboardState, ClipboardRole, ClipboardActivity } from '../types'
 import { RichEditor } from '../components/RichEditor'
@@ -85,6 +85,22 @@ export function ClipboardPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, metaQ.data, token])
 
+  // Pre-load state via REST API while socket is connecting (for Citrix compatibility)
+  useEffect(() => {
+    if (!id || !sessionToken) return
+
+    // Load state via REST API immediately (faster than waiting for socket)
+    getClipboardState(id, sessionToken)
+      .then((initialState) => {
+        setState(initialState)
+        setCachedState(id, initialState)
+      })
+      .catch((err) => {
+        // If REST API fails, socket will handle it
+        console.warn('Failed to pre-load state via REST API:', err)
+      })
+  }, [id, sessionToken])
+
   // Socket connection
   useEffect(() => {
     if (!id || !sessionToken) {
@@ -120,7 +136,17 @@ export function ClipboardPage() {
         activity: s.activity,
         settings: s.settings
       }
-      setState(newState)
+      // Only update if socket state is newer or if we don't have state yet
+      setState((prev) => {
+        if (!prev) return newState
+        // Prefer socket state if it's newer
+        const socketTime = new Date(s.contentUpdatedAt).getTime()
+        const prevTime = new Date(prev.contentUpdatedAt).getTime()
+        if (socketTime >= prevTime) {
+          return newState
+        }
+        return prev
+      })
       // Cache the state to reduce future reads
       setCachedState(id, newState)
     })

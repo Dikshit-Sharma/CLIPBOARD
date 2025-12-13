@@ -39,16 +39,17 @@ export function attachSocket(server: http.Server) {
     // 🔥 MAKE CITRIX COMPATIBLE
 
 
-    transports: ['polling', 'websocket'],     
+    transports: ['polling', 'websocket'],
 
 
     allowEIO3: true,                            // support older enterprise proxies
 
 
-    pingTimeout: 30000,
+    // Increase timeouts for Citrix environments
+    pingTimeout: 60000,  // 60 seconds (was 30)
 
 
-    pingInterval: 25000
+    pingInterval: 50000  // 50 seconds (was 25)
 
 
   })
