@@ -28,7 +28,6 @@ import {
   ListOrdered,
   Quote,
   Link as LinkIcon,
-  Download,
   FileText,
   Copy,
   Check
