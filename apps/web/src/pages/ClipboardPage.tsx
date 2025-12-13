@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { AlertTriangle, ArrowLeft, Copy, Link2, Lock, Settings, Share2, Trash2, Github } from 'lucide-react'
+import { AlertTriangle, ArrowLeft, Copy, Link2, Lock, Settings, Share2, Trash2, Github, QrCode } from 'lucide-react'
 import { Button, Card, Input, Modal } from '../components/ui'
 import { ApiError, authClipboard, getClipboardMeta, getClipboardState, updateClipboardSettings, deleteClipboard } from '../services/api'
 import { createClipboardSocket, type PresenceUser } from '../services/realtime'
@@ -9,6 +9,8 @@ import type { ClipboardSettings, ClipboardState, ClipboardRole, ClipboardActivit
 import { RichEditor } from '../components/RichEditor'
 import { ActivityFeed } from '../components/ActivityFeed'
 import { PresenceBar } from '../components/PresenceBar'
+import { QRCodeModal } from '../components/QRCodeModal'
+import { KeyboardShortcutsModal, useKeyboardShortcutHelp } from '../components/KeyboardShortcutsModal'
 import { getStoredTokens } from '../lib/tokens'
 import { saveRecent, removeRecent } from '../lib/recent'
 import { getCachedState, setCachedState } from '../lib/cache'
@@ -27,6 +29,11 @@ export function ClipboardPage() {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [shareOpen, setShareOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
+  const [qrOpen, setQrOpen] = useState(false)
+  const [keyboardHelpOpen, setKeyboardHelpOpen] = useState(false)
+
+  // Global keyboard shortcut for help
+  useKeyboardShortcutHelp(() => setKeyboardHelpOpen(true))
 
   const [sessionToken, setSessionToken] = useState<string | null>(null)
   const [role, setRole] = useState<ClipboardRole>('read')
@@ -447,8 +454,32 @@ export function ClipboardPage() {
           <p className="text-xs text-text-muted">
             Anyone with a link token can access the clipboard. Treat links like passwords.
           </p>
+
+          {/* QR Code Button */}
+          <Button
+            variant="ghost"
+            onClick={() => { setShareOpen(false); setQrOpen(true); }}
+            className="w-full mt-2"
+          >
+            <QrCode className="h-4 w-4" />
+            Share via QR Code
+          </Button>
         </div>
       </Modal>
+
+      {/* QR Code Modal */}
+      <QRCodeModal
+        open={qrOpen}
+        onClose={() => setQrOpen(false)}
+        url={shareLinks?.current || downloadLink}
+        title="Share via QR Code"
+      />
+
+      {/* Keyboard Shortcuts Help */}
+      <KeyboardShortcutsModal
+        open={keyboardHelpOpen}
+        onClose={() => setKeyboardHelpOpen(false)}
+      />
 
       <SettingsModal
         key={settingsOpen ? 'open' : 'closed'}
