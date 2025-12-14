@@ -38,13 +38,7 @@ export function Footer() {
             </ul>
           </div>
 
-          <div>
-            <h4 className="mb-4 text-sm font-semibold text-text-primary uppercase tracking-wider">Legal</h4>
-            <ul className="space-y-2 text-sm text-text-muted">
-              <li><Link to="/privacy" className="hover:text-accent-400 transition-colors">Privacy Policy</Link></li>
-              <li><Link to="/terms" className="hover:text-accent-400 transition-colors">Terms of Service</Link></li>
-            </ul>
-          </div>
+
         </div>
 
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-white/5 pt-8 md:flex-row">

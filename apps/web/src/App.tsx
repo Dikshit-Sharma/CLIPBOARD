@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { Route, Routes, useLocation } from 'react-router-dom'
 import { DevelopmentBanner } from './components/DevelopmentBanner'
+import { Navbar } from './components/Navbar'
 import { Home } from './pages/Home'
 import { ClipboardPage } from './pages/ClipboardPage'
 import { Dashboard } from './pages/Dashboard'
@@ -51,6 +52,7 @@ export default function App() {
       <AuthProvider>
         <div className="min-h-screen bg-bg-950 text-text-primary">
           <DevelopmentBanner />
+          <Navbar />
           <AppRoutes />
         </div>
       </AuthProvider>
