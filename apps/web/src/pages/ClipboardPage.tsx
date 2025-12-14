@@ -414,7 +414,7 @@ export function ClipboardPage() {
         <Card className="p-6 mt-6">
           <div className="flex items-center justify-between gap-2 mb-4 pb-4 border-b border-white/10">
              <h3 className="text-lg font-semibold text-text-primary">Attachments</h3>
-             <span className="text-xs text-text-muted">Max 150MB</span>
+             <span className="text-xs text-text-muted">Max 50MB</span>
           </div>
 
           {!state ? (
