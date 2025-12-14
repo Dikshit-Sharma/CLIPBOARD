@@ -5,6 +5,7 @@ import { Clipboard, Sparkles, Github, LogIn, Timer, Shield, Menu, X } from 'luci
 import { Button, Input, Modal } from './ui' // improved import path
 import { UserMenu } from './UserMenu'
 import { AuthModal } from './AuthModal'
+import { FeedbackModal } from './FeedbackModal'
 import { useAuth } from '../lib/auth'
 import { createClipboard } from '../services/api'
 import { storeTokens } from '../lib/tokens'
@@ -16,6 +17,7 @@ export function Navbar() {
   const { user, loading } = useAuth()
   const [authOpen, setAuthOpen] = useState(false)
   const [createOpen, setCreateOpen] = useState(false)
+  const [feedbackOpen, setFeedbackOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   // Create Clipboard State
@@ -77,6 +79,12 @@ export function Navbar() {
               <Link to="/use-cases" className="text-sm font-medium text-text-muted hover:text-text-primary transition-colors">
                 Use Cases
               </Link>
+              <button
+                onClick={() => setFeedbackOpen(true)}
+                className="text-sm font-medium text-text-muted hover:text-text-primary transition-colors flex items-center gap-1.5"
+              >
+                Feedback
+              </button>
             </nav>
 
             {/* Actions */}
@@ -154,6 +162,15 @@ export function Navbar() {
               >
                 Use Cases
               </Link>
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false)
+                  setFeedbackOpen(true)
+                }}
+                className="block w-full text-left px-3 py-2 text-base font-medium text-text-muted hover:bg-surface-800 hover:text-text-primary rounded-lg"
+              >
+                Feedback
+              </button>
 
               <div className="my-2 border-t border-white/5" />
 
@@ -187,6 +204,7 @@ export function Navbar() {
         )}
       </header>
 
+      <FeedbackModal open={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
       <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
 
       {/* Create Clipboard Modal */}
