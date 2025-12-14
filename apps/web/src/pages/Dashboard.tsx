@@ -41,7 +41,11 @@ export function Dashboard() {
   const filteredClipboards = clipboards.filter(cb => {
     // 1. Search
     if (search) {
-      const match = cb.contentHtml.toLowerCase().includes(search.toLowerCase())
+      const q = search.toLowerCase()
+      const match =
+        cb.contentHtml.toLowerCase().includes(q) ||
+        (cb.title?.toLowerCase().includes(q) ?? false) ||
+        (cb.id.toLowerCase().includes(q) ?? false)
       if (!match) return false
     }
 
