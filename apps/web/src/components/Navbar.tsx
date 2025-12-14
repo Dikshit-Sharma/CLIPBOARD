@@ -50,11 +50,22 @@ export function Navbar() {
 
   return (
     <>
+      <style>{`
+        .custom-nav-link {
+          text-decoration: none !important;
+          border-bottom: none !important;
+          box-shadow: none !important;
+        }
+        .custom-nav-link:hover, .custom-nav-link:active, .custom-nav-link:focus {
+           text-decoration: none !important;
+           border-bottom: none !important;
+        }
+      `}</style>
       <header className="sticky top-0 z-50 border-b border-white/5 bg-bg-950/80 backdrop-blur-xl">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between gap-4">
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity nav-link-reset" style={{ textDecoration: 'none' }}>
+            <Link to="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity custom-nav-link" style={{ textDecoration: 'none' }}>
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-accent-500/20 to-accent-400/10 ring-1 ring-accent-500/30">
                 <Clipboard className="h-5 w-5 text-accent-400" />
               </div>
@@ -67,16 +78,16 @@ export function Navbar() {
 
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center gap-6">
-              <Link to="/" className="text-sm font-medium text-text-muted hover:text-text-primary transition-colors nav-link-reset" style={{ textDecoration: 'none' }}>
+              <Link to="/" className="text-sm font-medium text-text-muted hover:text-text-primary transition-colors custom-nav-link" style={{ textDecoration: 'none' }}>
                 Home
               </Link>
-              <Link to="/about" className="text-sm font-medium text-text-muted hover:text-text-primary transition-colors nav-link-reset" style={{ textDecoration: 'none' }}>
+              <Link to="/about" className="text-sm font-medium text-text-muted hover:text-text-primary transition-colors custom-nav-link" style={{ textDecoration: 'none' }}>
                 About
               </Link>
-              <Link to="/how-it-works" className="text-sm font-medium text-text-muted hover:text-text-primary transition-colors nav-link-reset" style={{ textDecoration: 'none' }}>
+              <Link to="/how-it-works" className="text-sm font-medium text-text-muted hover:text-text-primary transition-colors custom-nav-link" style={{ textDecoration: 'none' }}>
                 How it Works
               </Link>
-              <Link to="/use-cases" className="text-sm font-medium text-text-muted hover:text-text-primary transition-colors nav-link-reset" style={{ textDecoration: 'none' }}>
+              <Link to="/use-cases" className="text-sm font-medium text-text-muted hover:text-text-primary transition-colors custom-nav-link" style={{ textDecoration: 'none' }}>
                 Use Cases
               </Link>
               <button
@@ -137,7 +148,7 @@ export function Navbar() {
               <Link
                 to="/"
                 onClick={() => setMobileMenuOpen(false)}
-                className="block px-3 py-2 text-base font-medium text-text-muted hover:bg-surface-800 hover:text-text-primary rounded-lg nav-link-reset"
+                className="block px-3 py-2 text-base font-medium text-text-muted hover:bg-surface-800 hover:text-text-primary rounded-lg custom-nav-link"
                 style={{ textDecoration: 'none' }}
               >
                 Home
@@ -145,7 +156,7 @@ export function Navbar() {
               <Link
                 to="/about"
                 onClick={() => setMobileMenuOpen(false)}
-                className="block px-3 py-2 text-base font-medium text-text-muted hover:bg-surface-800 hover:text-text-primary rounded-lg nav-link-reset"
+                className="block px-3 py-2 text-base font-medium text-text-muted hover:bg-surface-800 hover:text-text-primary rounded-lg custom-nav-link"
                 style={{ textDecoration: 'none' }}
               >
                 About
@@ -153,7 +164,7 @@ export function Navbar() {
               <Link
                 to="/how-it-works"
                 onClick={() => setMobileMenuOpen(false)}
-                className="block px-3 py-2 text-base font-medium text-text-muted hover:bg-surface-800 hover:text-text-primary rounded-lg"
+                className="block px-3 py-2 text-base font-medium text-text-muted hover:bg-surface-800 hover:text-text-primary rounded-lg custom-nav-link"
                 style={{ textDecoration: 'none' }}
               >
                 How it Works
@@ -161,7 +172,7 @@ export function Navbar() {
               <Link
                 to="/use-cases"
                 onClick={() => setMobileMenuOpen(false)}
-                className="block px-3 py-2 text-base font-medium text-text-muted hover:bg-surface-800 hover:text-text-primary rounded-lg"
+                className="block px-3 py-2 text-base font-medium text-text-muted hover:bg-surface-800 hover:text-text-primary rounded-lg custom-nav-link"
                 style={{ textDecoration: 'none' }}
               >
                 Use Cases
