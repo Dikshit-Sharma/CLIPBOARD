@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+.nav-link-reset {
+  text-decoration: none !important;
+}
+
+
 /* Theme CSS Custom Properties */
 :root {
   /* Dark theme (default) */

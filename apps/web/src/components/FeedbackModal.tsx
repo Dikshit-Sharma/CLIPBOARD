@@ -53,11 +53,12 @@ export function FeedbackModal({ open, onClose }: FeedbackModalProps) {
           setRating(0)
         }, 2000)
       } else {
-        alert('Failed to send feedback. Please try again.')
+        const errorData = await res.json().catch(() => ({}))
+        alert(errorData.error || 'Failed to send feedback. Please try again.')
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err)
-      alert('Failed to send feedback. Please try again.')
+      alert(err.message || 'Failed to send feedback. Please try again.')
     } finally {
       setLoading(false)
     }

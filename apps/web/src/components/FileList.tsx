@@ -13,7 +13,7 @@ function formatSize(bytes: number) {
   const k = 1024;
   const sizes = ['KB', 'MB', 'GB', 'TB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i - 1];
 }
 
 export const FileList: React.FC<FileListProps> = ({ files, onDelete, canDelete }) => {
