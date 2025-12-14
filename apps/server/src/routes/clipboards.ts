@@ -233,9 +233,9 @@ clipboardsRouter.post('/:id/files/presign', requireSession, async (req: Request,
   try {
     const { url, path, publicUrl, token, fileId } = await generateUploadUrl(name, type)
     res.json({ url, path, publicUrl, token, fileId })
-  } catch (err) {
+  } catch (err: any) {
     console.error('Presign error:', err)
-    res.status(500).json({ error: 'Failed to generate upload URL' })
+    res.status(500).json({ error: err.message || 'Failed to generate upload URL', details: err })
   }
 })
 
