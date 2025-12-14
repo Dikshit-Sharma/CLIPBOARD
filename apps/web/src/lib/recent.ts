@@ -17,10 +17,18 @@ export function loadRecents(): RecentClipboard[] {
   }
 }
 
-export function saveRecent(id: string) {
+export function saveRecent(id: string, title?: string) {
   const now = new Date().toISOString()
   const list = loadRecents().filter((r) => r.id !== id)
-  list.unshift({ id, lastOpenedAt: now })
+  const item: RecentClipboard = { id, lastOpenedAt: now }
+  if (title) item.label = title
+  // Preserve existing label if updating and no new title provided
+  else {
+    const existing = loadRecents().find(r => r.id === id)
+    if (existing?.label) item.label = existing.label
+  }
+
+  list.unshift(item)
   localStorage.setItem(KEY, JSON.stringify(list.slice(0, 20)))
 }
 

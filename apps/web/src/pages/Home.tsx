@@ -32,7 +32,11 @@ export function Home() {
     const list = loadRecents()
     if (!query.trim()) return list
     const q = query.trim().toLowerCase()
-    return list.filter((r) => r.id.toLowerCase().includes(q))
+    return list.filter((r) => {
+      if (r.id.toLowerCase().includes(q)) return true
+      if (r.label?.toLowerCase().includes(q)) return true
+      return false
+    })
   }, [query, recentsKey])
 
   const handleClearRecents = () => {
@@ -54,7 +58,7 @@ export function Home() {
       }),
     onSuccess: (data) => {
       storeTokens(data.id, data.tokens)
-      saveRecent(data.id)
+      saveRecent(data.id, title.trim() || undefined)
       setCreateOpen(false)
       // Track clipboard creation
       trackClipboardCreated(data.id, Boolean(password.trim()), expiresIn)
@@ -221,8 +225,9 @@ export function Home() {
                         >
                           <div className="flex-1 min-w-0">
                             <div className="font-mono text-sm font-semibold text-text-primary group-hover:text-accent-400 transition-colors">
-                              {r.id}
+                              {r.label || r.id}
                             </div>
+                            {r.label && <div className="text-xs text-text-muted font-mono">{r.id}</div>}
                             <div className="flex items-center gap-1 mt-1 text-xs text-text-muted">
                               <Clock className="h-3 w-3" />
                               {new Date(r.lastOpenedAt).toLocaleString()}

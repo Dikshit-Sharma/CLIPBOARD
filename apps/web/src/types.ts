@@ -27,6 +27,7 @@ export type ClipboardMeta = {
   createdAt: string
   expiresAt: string | null
   protected: boolean
+  title?: string | null
   settings: ClipboardSettings
 }
 

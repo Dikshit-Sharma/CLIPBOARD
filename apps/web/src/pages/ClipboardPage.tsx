@@ -64,7 +64,10 @@ export function ClipboardPage() {
       setRole(data.role)
       setPasswordOpen(false)
       setError(null)
-      saveRecent(id!)
+      // We don't have title here unless we check metaQ, but metaQ might not be ready or we are inside mutation.
+      // Better to rely on the useEffect below for saving recent with title.
+      // But let's keep it here for now, relying on subsequent updates or the useEffect.
+      saveRecent(id!) // This might just update timestamp if title already there, or add without title.
     },
     onError: (e: unknown) => {
       if (e instanceof ApiError) {
@@ -94,6 +97,9 @@ export function ClipboardPage() {
       setPasswordOpen(true)
       return
     }
+
+    // Save to recents with title if available
+    saveRecent(id, metaQ.data.title || undefined)
 
     if (!sessionToken && !authMut.isPending) authMut.mutate({ token: candidateToken })
     // eslint-disable-next-line react-hooks/exhaustive-deps
