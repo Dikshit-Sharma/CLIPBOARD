@@ -19,7 +19,7 @@ export const FileUploader: React.FC<FileUploaderProps> = ({ clipboardId, session
     if (!file) return;
 
     if (file.size > 150 * 1024 * 1024) {
-      setError('File size exceeds 150MB limit.');
+      setError('File size exceeds 50MB limit.');
       return;
     }
 
