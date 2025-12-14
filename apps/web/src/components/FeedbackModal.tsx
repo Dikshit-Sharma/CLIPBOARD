@@ -34,8 +34,14 @@ export function FeedbackModal({ open, onClose }: FeedbackModalProps) {
         })
       })
 
+      const data = await res.json()
+
       if (res.ok) {
         setSuccess(true)
+        if (data.simulated) {
+          console.log('Email simulation:', data)
+          alert('Note: Email sending is simulated because SMTP credentials are not configured. Check the server console.')
+        }
         setTimeout(() => {
           setSuccess(false)
           onClose()
