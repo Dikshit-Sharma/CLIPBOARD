@@ -410,12 +410,12 @@ export function ClipboardPage() {
             <ActivityFeed items={state?.activity || []} />
           </Card>
 
+
           {/* AdSense Unit - Sidebar */}
           <Card className="p-4 overflow-hidden flex justify-center bg-surface-800/50">
-             <div className="text-xs text-text-muted mb-2 w-full text-center">Advertisement</div>
-             <AdUnit slot="1234567890" format="rectangle" />
+            <div className="text-xs text-text-muted mb-2 w-full text-center">Advertisement</div>
+            <AdUnit slot="1234567890" format="rectangle" />
           </Card>
-        </div>
         </div>
       </div>
 

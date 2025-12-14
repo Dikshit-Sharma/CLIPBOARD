@@ -11,6 +11,7 @@ import { trackClipboardCreated, trackClipboardOpened } from '../lib/analytics'
 import { useAuth } from '../lib/auth'
 import { AuthModal } from '../components/AuthModal'
 import { UserMenu } from '../components/UserMenu'
+import { AdUnit } from '../components/AdUnit'
 
 
 export function Home() {
@@ -342,6 +343,14 @@ export function Home() {
           </div>
         </div>
       </Modal>
+
+      {/* AdSense Unit - Home Footer */}
+      <div className="mt-12 flex justify-center">
+        <div className="w-full max-w-[728px] overflow-hidden rounded-xl bg-surface-800/30 p-4 border border-white/5">
+           <div className="text-xs text-text-muted mb-2 w-full text-center">Advertisement</div>
+           <AdUnit slot="0987654321" format="horizontal" />
+        </div>
+      </div>
 
       {/* Footer */}
       <footer className="mt-16 text-center">
