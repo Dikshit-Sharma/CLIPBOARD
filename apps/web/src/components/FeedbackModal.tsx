@@ -15,18 +15,46 @@ export function FeedbackModal({ open, onClose }: FeedbackModalProps) {
   const [rating, setRating] = useState(0)
   const [hoverRating, setHoverRating] = useState(0)
 
-  const handleSubmit = () => {
-    const subject = `SharedClip Feedback: ${firstName} ${lastName}`
-    const body = `Name: ${firstName} ${lastName}
-Email: ${email}
-Rating: ${rating}/5
+  const [loading, setLoading] = useState(false)
+  const [success, setSuccess] = useState(false)
 
-Message:
-${message}
-`
-    const mailtoLink = `mailto:dikshit.sharma2580@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
-    window.location.href = mailtoLink
-    onClose()
+  const handleSubmit = async () => {
+    setLoading(true)
+    try {
+      const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
+      const res = await fetch(`${BASE_URL}/api/feedback`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          firstName,
+          lastName,
+          email,
+          message,
+          rating
+        })
+      })
+
+      if (res.ok) {
+        setSuccess(true)
+        setTimeout(() => {
+          setSuccess(false)
+          onClose()
+          // Reset form
+          setFirstName('')
+          setLastName('')
+          setEmail('')
+          setMessage('')
+          setRating(0)
+        }, 2000)
+      } else {
+        alert('Failed to send feedback. Please try again.')
+      }
+    } catch (err) {
+      console.error(err)
+      alert('Failed to send feedback. Please try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -100,9 +128,21 @@ ${message}
         </div>
 
         <div className="pt-4 flex flex-col gap-3">
-          <Button onClick={handleSubmit} className="w-full justify-center shadow-lg shadow-accent-500/20" disabled={!message || !rating}>
-            <Send className="h-4 w-4 mr-2" />
-            Submit Feedback
+          <Button
+            onClick={handleSubmit}
+            className="w-full justify-center shadow-lg shadow-accent-500/20"
+            disabled={!message || !rating || loading || success}
+          >
+            {loading ? (
+              <span className="animate-pulse">Sending...</span>
+            ) : success ? (
+              <span>Thank You! 💛</span>
+            ) : (
+              <>
+                <Send className="h-4 w-4 mr-2" />
+                Submit Feedback
+              </>
+            )}
           </Button>
 
           <a

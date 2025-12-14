@@ -54,29 +54,29 @@ export function Navbar() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between gap-4">
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity no-underline">
+            <Link to="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity !no-underline">
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-accent-500/20 to-accent-400/10 ring-1 ring-accent-500/30">
                 <Clipboard className="h-5 w-5 text-accent-400" />
               </div>
               <div>
                 <h1 className="text-lg font-bold bg-gradient-to-r from-text-primary to-text-primary/80 bg-clip-text text-transparent">
-                  SharedClip <span className="text-sm text-text-muted">beta</span>
+                  SharedClip <span className="text-sm text-text-muted">Beta</span>
                 </h1>
               </div>
             </Link>
 
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center gap-6">
-              <Link to="/" className="text-sm font-medium text-text-muted hover:text-text-primary transition-colors no-underline">
+              <Link to="/" className="text-sm font-medium text-text-muted hover:text-text-primary transition-colors !no-underline">
                 Home
               </Link>
-              <Link to="/about" className="text-sm font-medium text-text-muted hover:text-text-primary transition-colors no-underline">
+              <Link to="/about" className="text-sm font-medium text-text-muted hover:text-text-primary transition-colors !no-underline">
                 About
               </Link>
-              <Link to="/how-it-works" className="text-sm font-medium text-text-muted hover:text-text-primary transition-colors no-underline">
+              <Link to="/how-it-works" className="text-sm font-medium text-text-muted hover:text-text-primary transition-colors !no-underline">
                 How it Works
               </Link>
-              <Link to="/use-cases" className="text-sm font-medium text-text-muted hover:text-text-primary transition-colors no-underline">
+              <Link to="/use-cases" className="text-sm font-medium text-text-muted hover:text-text-primary transition-colors !no-underline">
                 Use Cases
               </Link>
               <button
@@ -137,28 +137,28 @@ export function Navbar() {
               <Link
                 to="/"
                 onClick={() => setMobileMenuOpen(false)}
-                className="block px-3 py-2 text-base font-medium text-text-muted hover:bg-surface-800 hover:text-text-primary rounded-lg no-underline"
+                className="block px-3 py-2 text-base font-medium text-text-muted hover:bg-surface-800 hover:text-text-primary rounded-lg !no-underline"
               >
                 Home
               </Link>
               <Link
                 to="/about"
                 onClick={() => setMobileMenuOpen(false)}
-                className="block px-3 py-2 text-base font-medium text-text-muted hover:bg-surface-800 hover:text-text-primary rounded-lg no-underline"
+                className="block px-3 py-2 text-base font-medium text-text-muted hover:bg-surface-800 hover:text-text-primary rounded-lg !no-underline"
               >
                 About
               </Link>
               <Link
                 to="/how-it-works"
                 onClick={() => setMobileMenuOpen(false)}
-                className="block px-3 py-2 text-base font-medium text-text-muted hover:bg-surface-800 hover:text-text-primary rounded-lg no-underline"
+                className="block px-3 py-2 text-base font-medium text-text-muted hover:bg-surface-800 hover:text-text-primary rounded-lg !no-underline"
               >
                 How it Works
               </Link>
               <Link
                 to="/use-cases"
                 onClick={() => setMobileMenuOpen(false)}
-                className="block px-3 py-2 text-base font-medium text-text-muted hover:bg-surface-800 hover:text-text-primary rounded-lg no-underline"
+                className="block px-3 py-2 text-base font-medium text-text-muted hover:bg-surface-800 hover:text-text-primary rounded-lg !no-underline"
               >
                 Use Cases
               </Link>

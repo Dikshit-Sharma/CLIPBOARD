@@ -1,6 +1,7 @@
 import express from 'express'
 import cors from 'cors'
 import { clipboardsRouter } from './routes/clipboards.js'
+import { feedbackRouter } from './routes/feedback.js'
 
 export function createApp() {
   const app = express()
@@ -21,6 +22,7 @@ export function createApp() {
   app.get('/healthz', (_req, res) => res.json({ ok: true }));
 
   app.use('/api/clipboards', clipboardsRouter);
+  app.use('/api/feedback', feedbackRouter);
 
   // Basic error handler
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
