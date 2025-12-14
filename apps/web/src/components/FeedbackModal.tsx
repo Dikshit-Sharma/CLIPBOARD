@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Modal, Button, Input } from './ui'
-import { Github, Star, Send, MessageSquare } from 'lucide-react'
+import { Github, Star, Send } from 'lucide-react'
 
 interface FeedbackModalProps {
   open: boolean
