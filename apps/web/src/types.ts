@@ -13,14 +13,7 @@ export type ClipboardActivity = {
   summary: string
 }
 
-export type ClipboardFile = {
-  id: string
-  name: string
-  size: number
-  mimeType?: string
-  url: string
-  uploadedAt?: string
-}
+
 
 export type ClipboardMeta = {
   id: string
@@ -38,11 +31,23 @@ export type ClipboardState = {
   contentUpdatedAt: string
   activity: ClipboardActivity[]
   settings: ClipboardSettings
+  files?: ClipboardFile[]
+}
+
+export type ClipboardFile = {
+  id: string
+  name: string
+  size: number
+  type: string
+  path: string
+  url: string
+  uploadedAt: string
 }
 
 export type Clipboard = {
   id: string
   ownerId?: string | null
+  files: ClipboardFile[]
   title?: string | null
   createdAt: string
   expiresAt: string | null

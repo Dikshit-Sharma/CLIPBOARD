@@ -12,6 +12,13 @@ import Strike from '@tiptap/extension-strike'
 import Underline from '@tiptap/extension-underline'
 import Placeholder from '@tiptap/extension-placeholder'
 import CharacterCount from '@tiptap/extension-character-count'
+import { Table } from '@tiptap/extension-table'
+import { TableRow } from '@tiptap/extension-table-row'
+import { TableCell } from '@tiptap/extension-table-cell'
+import { TableHeader } from '@tiptap/extension-table-header'
+import { TextStyle } from '@tiptap/extension-text-style'
+import  FontFamily  from '@tiptap/extension-font-family'
+import { FontSize } from './extensions/FontSize'
 import { common, createLowlight } from 'lowlight'
 import clsx from 'clsx'
 import {
@@ -30,7 +37,11 @@ import {
   Link as LinkIcon,
   FileText,
   Copy,
-  Check
+  Check,
+  Table as TableIcon,
+  Plus,
+  Trash2,
+  Type
 } from 'lucide-react'
 
 const lowlight = createLowlight(common)
@@ -46,6 +57,7 @@ export function RichEditor(props: {
   const [linkUrl, setLinkUrl] = useState('')
   const [showLinkInput, setShowLinkInput] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [showTableMenu, setShowTableMenu] = useState(false)
 
   const extensions = useMemo(
     () => [
@@ -79,7 +91,16 @@ export function RichEditor(props: {
       Placeholder.configure({
         placeholder: 'Start typing or paste your content here...'
       }),
-      CharacterCount
+      CharacterCount,
+      Table.configure({
+        resizable: true,
+      }),
+      TableRow,
+      TableHeader,
+      TableCell,
+      TextStyle,
+      FontFamily,
+      FontSize
     ],
     []
   )
@@ -172,6 +193,70 @@ export function RichEditor(props: {
     <div className="space-y-3">
       {props.editable && (
         <div className="flex flex-wrap items-center gap-2 rounded-xl bg-surface-900/50 p-2 ring-1 ring-white/5">
+          <div className="flex items-center gap-1 border-r border-white/10 pr-2">
+            {/* Font Family */}
+            <div className="group relative">
+               <ToolbarButton
+                 icon={<Type className="h-4 w-4" />}
+                 label="Font Family"
+                 onClick={() => {}}
+                 active={false}
+               />
+               <div className="absolute top-full left-0 z-50 mt-1 hidden w-32 flex-col rounded-lg bg-surface-800 p-1 shadow-xl ring-1 ring-white/10 group-hover:flex">
+                 <button className="rounded px-2 py-1 text-left text-xs hover:bg-surface-700" onClick={() => editor.chain().focus().setFontFamily('Inter').run()}>Sans Serif</button>
+                 <button className="rounded px-2 py-1 text-left text-xs hover:bg-surface-700 font-serif" onClick={() => editor.chain().focus().setFontFamily('serif').run()}>Serif</button>
+                 <button className="rounded px-2 py-1 text-left text-xs hover:bg-surface-700 font-mono" onClick={() => editor.chain().focus().setFontFamily('monospace').run()}>Monospace</button>
+               </div>
+            </div>
+
+            {/* Font Size */}
+            <div className="group relative">
+              <ToolbarButton
+                icon={<span className="text-xs font-bold">Aa</span>}
+                label="Font Size"
+                onClick={() => {}}
+                active={false}
+              />
+               <div className="absolute top-full left-0 z-50 mt-1 hidden w-24 flex-col rounded-lg bg-surface-800 p-1 shadow-xl ring-1 ring-white/10 group-hover:flex">
+                 <button className="rounded px-2 py-1 text-left text-xs hover:bg-surface-700" onClick={() => editor.chain().focus().setFontSize('12px').run()}>Small</button>
+                 <button className="rounded px-2 py-1 text-left text-xs hover:bg-surface-700" onClick={() => editor.chain().focus().unsetFontSize().run()}>Normal</button>
+                 <button className="rounded px-2 py-1 text-left text-xs hover:bg-surface-700" onClick={() => editor.chain().focus().setFontSize('20px').run()}>Large</button>
+                 <button className="rounded px-2 py-1 text-left text-xs hover:bg-surface-700" onClick={() => editor.chain().focus().setFontSize('24px').run()}>Huge</button>
+               </div>
+            </div>
+
+            <div className="h-4 w-[1px] bg-white/10 mx-1"></div>
+
+             {/* Table Controls */}
+             <div className="relative">
+              <ToolbarButton
+                icon={<TableIcon className="h-4 w-4" />}
+                label="Insert Table"
+                onClick={() => setShowTableMenu(!showTableMenu)}
+                active={editor.isActive('table')}
+              />
+              {showTableMenu && (
+                <div className="absolute top-full left-0 z-50 mt-1 w-48 flex-col rounded-lg bg-surface-800 p-1 shadow-xl ring-1 ring-white/10 flex">
+                   <button className="flex items-center gap-2 rounded px-2 py-1.5 text-left text-xs hover:bg-surface-700" onClick={() => { editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run(); setShowTableMenu(false); }}>
+                     <Plus className="h-3 w-3" /> Insert 3x3 Table
+                   </button>
+                   <div className="my-1 h-[1px] bg-white/10"></div>
+                   <button className="flex items-center gap-2 rounded px-2 py-1.5 text-left text-xs hover:bg-surface-700" onClick={() => editor.chain().focus().addColumnBefore().run()} disabled={!editor.can().addColumnBefore()}>Add Col Before</button>
+                   <button className="flex items-center gap-2 rounded px-2 py-1.5 text-left text-xs hover:bg-surface-700" onClick={() => editor.chain().focus().addColumnAfter().run()} disabled={!editor.can().addColumnAfter()}>Add Col After</button>
+                   <button className="flex items-center gap-2 rounded px-2 py-1.5 text-left text-xs hover:bg-surface-700" onClick={() => editor.chain().focus().deleteColumn().run()} disabled={!editor.can().deleteColumn()}>Delete Col</button>
+                   <div className="my-1 h-[1px] bg-white/10"></div>
+                   <button className="flex items-center gap-2 rounded px-2 py-1.5 text-left text-xs hover:bg-surface-700" onClick={() => editor.chain().focus().addRowBefore().run()} disabled={!editor.can().addRowBefore()}>Add Row Before</button>
+                   <button className="flex items-center gap-2 rounded px-2 py-1.5 text-left text-xs hover:bg-surface-700" onClick={() => editor.chain().focus().addRowAfter().run()} disabled={!editor.can().addRowAfter()}>Add Row After</button>
+                   <button className="flex items-center gap-2 rounded px-2 py-1.5 text-left text-xs hover:bg-surface-700" onClick={() => editor.chain().focus().deleteRow().run()} disabled={!editor.can().deleteRow()}>Delete Row</button>
+                   <div className="my-1 h-[1px] bg-white/10"></div>
+                   <button className="flex items-center gap-2 rounded px-2 py-1.5 text-left text-xs text-red-400 hover:bg-surface-700" onClick={() => { editor.chain().focus().deleteTable().run(); setShowTableMenu(false); }} disabled={!editor.can().deleteTable()}>
+                     <Trash2 className="h-3 w-3" /> Delete Table
+                   </button>
+                </div>
+              )}
+             </div>
+          </div>
+
           <div className="flex items-center gap-1 border-r border-white/10 pr-2">
             <ToolbarButton
               icon={<Bold className="h-4 w-4" />}

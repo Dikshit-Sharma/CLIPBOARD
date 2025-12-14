@@ -129,3 +129,48 @@ export async function deleteClipboard(id: string, sessionToken: string) {
   }
   return (await res.json()) as { ok: true }
 }
+
+export async function presignUpload(id: string, sessionToken: string, file: { name: string; type: string; size: number }) {
+  const res = await fetch(joinUrl(API_BASE_URL, `/api/clipboards/${id}/files/presign`), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${sessionToken}`
+    },
+    body: JSON.stringify(file)
+  })
+
+  if (!res.ok) {
+     const errorText = await res.text()
+     let errorMessage = errorText
+      try {
+        const errorJson = JSON.parse(errorText)
+        errorMessage = errorJson.error || errorText
+      } catch { /* empty */ }
+    throw new Error(errorMessage || `HTTP ${res.status}`)
+  }
+
+  return (await res.json()) as { url: string; path: string; publicUrl: string; token?: string; fileId: string }
+}
+
+export async function saveFileMetadata(id: string, sessionToken: string, fileData: any) {
+  const res = await fetch(joinUrl(API_BASE_URL, `/api/clipboards/${id}/files`), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${sessionToken}`
+    },
+    body: JSON.stringify(fileData)
+  })
+  if (!res.ok) throw new Error(await res.text())
+  return await res.json()
+}
+
+export async function deleteFile(clipboardId: string, fileId: string, sessionToken: string) {
+  const res = await fetch(joinUrl(API_BASE_URL, `/api/clipboards/${clipboardId}/files/${fileId}`), {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${sessionToken}` }
+  })
+  if (!res.ok) throw new Error(await res.text())
+  return await res.json()
+}

@@ -11,7 +11,18 @@ export type ClipboardActivity = {
   summary: string
 }
 
+export type ClipboardFile = {
+  id: string
+  name: string
+  size: number
+  type: string
+  path: string
+  url: string
+  uploadedAt: string
+}
+
 export type Clipboard = {
+  files: ClipboardFile[]
   id: string
   ownerId?: string | null
   title?: string | null

@@ -4,7 +4,9 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import { AlertTriangle, ArrowLeft, Copy, Link2, Lock, Settings, Share2, Trash2, Github, QrCode, Shield, LogIn } from 'lucide-react'
 import { AutoSaveIndicator } from '../components/AutoSaveIndicator'
 import { Button, Card, Input, Modal } from '../components/ui'
-import { ApiError, authClipboard, getClipboardMeta, getClipboardState, updateClipboardSettings, deleteClipboard } from '../services/api'
+import { FileList } from '../components/FileList'
+import { FileUploader } from '../components/FileUploader'
+import { ApiError, authClipboard, getClipboardMeta, getClipboardState, updateClipboardSettings, deleteClipboard, deleteFile } from '../services/api'
 import { createClipboardSocket, type PresenceUser } from '../services/realtime'
 import type { ClipboardSettings, ClipboardState, ClipboardRole, ClipboardActivity } from '../types'
 import { RichEditor } from '../components/RichEditor'
@@ -157,7 +159,8 @@ export function ClipboardPage() {
         contentHtml: s.contentHtml,
         contentUpdatedAt: s.contentUpdatedAt,
         activity: s.activity,
-        settings: s.settings
+        settings: s.settings,
+        files: s.files || []
       }
       // Always accept authoritative server state
       setState((prev) => {
@@ -176,11 +179,12 @@ export function ClipboardPage() {
         if (!prev) return prev
         if (new Date(p.contentUpdatedAt).getTime() < new Date(prev.contentUpdatedAt).getTime()) return prev
         const newState = { ...prev, contentHtml: p.html, contentUpdatedAt: p.contentUpdatedAt }
-        // Update cache with the new content to prevent data loss on refresh
         setCachedState(id, newState)
         return newState
       })
     })
+
+
 
     socket.emit('clipboard:join', { clipboardId: id, sessionToken })
 
@@ -388,6 +392,54 @@ export function ClipboardPage() {
               }}
             />
           </div>
+        </Card>
+
+        {/* Attachments Card */}
+        <Card className="p-6 mt-6">
+          <div className="flex items-center justify-between gap-2 mb-4 pb-4 border-b border-white/10">
+             <h3 className="text-lg font-semibold text-text-primary">Attachments</h3>
+             <span className="text-xs text-text-muted">Max 150MB</span>
+          </div>
+
+          {!state ? (
+            <div className="text-sm text-text-muted">Loading files...</div>
+          ) : (
+            <>
+              {isWrite && sessionToken && (
+               <FileUploader
+                 clipboardId={id}
+                 sessionToken={sessionToken}
+                 onUploadComplete={() => {
+                   if(id && sessionToken) {
+                     getClipboardState(id, sessionToken).then(setState)
+                   }
+                 }}
+               />
+              )}
+
+              <FileList
+                files={state.files || []}
+                canDelete={isWrite}
+                onDelete={async (fileId) => {
+                  if(!confirm('Delete this file?')) return
+                  try {
+                    await deleteFile(id, fileId, sessionToken!)
+                     if(id && sessionToken) {
+                       getClipboardState(id, sessionToken).then(setState)
+                     }
+                  } catch(e) {
+                    alert('Failed to delete file')
+                  }
+                }}
+              />
+
+              {(!state.files || state.files.length === 0) && !isWrite && (
+                <div className="text-sm text-text-muted text-center py-8">
+                  No attachments.
+                </div>
+              )}
+            </>
+          )}
         </Card>
 
         {/* Sidebar */}

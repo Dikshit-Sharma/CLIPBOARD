@@ -3,7 +3,9 @@ import { nanoid } from 'nanoid'
 import bcrypt from 'bcryptjs'
 import { z } from 'zod'
 import { getClipboard, createClipboard, updateClipboard, deleteClipboard } from '../db.js'
-import type { Clipboard, ClipboardActivity, ClipboardRole } from '../types.js'
+import { generateUploadUrl, deleteFileFromStorage } from '../storage.js'
+import type { Clipboard, ClipboardActivity, ClipboardRole, ClipboardFile } from '../types.js'
+
 import { generateToken, sha256Hex, signSession, verifySession, verifyIdToken, type ClipboardSession } from '../auth.js'
 import { emitClipboardContentUpdated, emitClipboardPresence } from '../socket.js'
 
@@ -70,7 +72,8 @@ clipboardsRouter.post('/', async (req, res) => {
       settings: {},
       contentHtml: '<p></p>',
       contentUpdatedAt: nowIso(),
-      activity: [toActivity('created', 'Clipboard created')]
+      activity: [toActivity('created', 'Clipboard created')],
+      files: []
     }
 
     await createClipboard(cb)
@@ -168,7 +171,8 @@ clipboardsRouter.get('/:id/state', requireSession, async (req: Request, res: Res
     contentUpdatedAt: cb.contentUpdatedAt,
     activity: cb.activity,
     title: cb.title,
-    settings: cb.settings
+    settings: cb.settings,
+    files: cb.files || []
   })
 })
 
@@ -206,6 +210,83 @@ clipboardsRouter.post('/:id/settings', requireSession, async (req: Request, res:
   if (!updated) return res.status(500).json({ error: 'Failed to update' })
 
   res.json({ ok: true, expiresAt: updated.expiresAt, settings: updated.settings, protected: Boolean(updated.passwordHash) })
+})
+
+clipboardsRouter.post('/:id/files/presign', requireSession, async (req: Request, res: Response) => {
+  const authed = req as AuthedRequest
+  const id = req.params.id
+  if (authed.session.clipboardId !== id) return res.status(403).json({ error: 'Forbidden' })
+  if (authed.session.role !== 'write') return res.status(403).json({ error: 'Read-only' })
+
+  const { name, type, size } = req.body
+  if (!name || !type || !size) return res.status(400).json({ error: 'Missing file info' })
+
+  // Limit 150MB
+  if (size > 150 * 1024 * 1024) return res.status(400).json({ error: 'File too large (max 150MB)' })
+
+  const cb = await getClipboard(id)
+  if (!cb) return res.status(404).json({ error: 'Not found' })
+
+  // Only allow uploads for owned clipboards (registered users)
+  if (!cb.ownerId) return res.status(403).json({ error: 'Uploads require an account' })
+
+  try {
+    const { url, path, publicUrl, token, fileId } = await generateUploadUrl(name, type)
+    res.json({ url, path, publicUrl, token, fileId })
+  } catch (err) {
+    console.error('Presign error:', err)
+    res.status(500).json({ error: 'Failed to generate upload URL' })
+  }
+})
+
+clipboardsRouter.post('/:id/files', requireSession, async (req: Request, res: Response) => {
+  const authed = req as AuthedRequest
+  const id = req.params.id
+  if (authed.session.clipboardId !== id) return res.status(403).json({ error: 'Forbidden' })
+  if (authed.session.role !== 'write') return res.status(403).json({ error: 'Read-only' })
+
+  const body = req.body as ClipboardFile
+
+  const cb = await getClipboard(id)
+  if (!cb) return res.status(404).json({ error: 'Not found' })
+
+  const newActivity = toActivity('content-updated', `File uploaded: ${body.name}`)
+  const files = cb.files || []
+
+  await updateClipboard(id, {
+    files: [body, ...files],
+    activity: [newActivity, ...cb.activity]
+  })
+
+  res.json({ ok: true })
+})
+
+clipboardsRouter.delete('/:id/files/:fileId', requireSession, async (req: Request, res: Response) => {
+  const authed = req as AuthedRequest
+  const id = req.params.id
+  const fileId = req.params.fileId
+
+  if (authed.session.clipboardId !== id) return res.status(403).json({ error: 'Forbidden' })
+  if (authed.session.role !== 'write') return res.status(403).json({ error: 'Read-only' })
+
+  const cb = await getClipboard(id)
+  if (!cb) return res.status(404).json({ error: 'Not found' })
+
+  const files = cb.files || []
+  const file = files.find(f => f.id === fileId)
+  if (!file) return res.status(404).json({ error: 'File not found' })
+
+  // Delete from Storage
+  await deleteFileFromStorage(file.path)
+
+  // Update DB
+  const newActivity = toActivity('content-updated', `File deleted: ${file.name}`)
+  await updateClipboard(id, {
+    files: files.filter(f => f.id !== fileId),
+    activity: [newActivity, ...cb.activity]
+  })
+
+  res.json({ ok: true })
 })
 
 // Update content via REST (fallback) - Socket.IO is preferred

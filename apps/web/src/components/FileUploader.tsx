@@ -1,35 +1,106 @@
-import { useCallback } from 'react'
-import { useDropzone } from 'react-dropzone'
-import { UploadCloud } from 'lucide-react'
-import clsx from 'clsx'
 
-export function FileUploader(props: { disabled: boolean; busy: boolean; onFiles: (files: File[]) => void }) {
-  const onDrop = useCallback(
-    (acceptedFiles: File[]) => {
-      if (props.disabled) return
-      props.onFiles(acceptedFiles)
-    },
-    [props]
-  )
+import React, { useState, useRef } from 'react';
+import { presignUpload, saveFileMetadata } from '../services/api';
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    disabled: props.disabled,
-    maxSize: 25 * 1024 * 1024
-  })
+interface FileUploaderProps {
+  clipboardId: string;
+  sessionToken: string;
+  onUploadComplete: () => void;
+}
+
+export const FileUploader: React.FC<FileUploaderProps> = ({ clipboardId, sessionToken, onUploadComplete }) => {
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 150 * 1024 * 1024) {
+      setError('File size exceeds 150MB limit.');
+      return;
+    }
+
+    setUploading(true);
+    setError(null);
+
+    try {
+      // 1. Get Presigned URL
+      const { url, path, publicUrl, fileId } = await presignUpload(clipboardId, sessionToken, {
+        name: file.name,
+        type: file.type,
+        size: file.size
+      });
+
+      // 2. Upload to Supabase Storage
+      const uploadRes = await fetch(url, {
+        method: 'PUT',
+        body: file,
+        headers: {
+          'Content-Type': file.type
+        }
+      });
+
+      if (!uploadRes.ok) {
+        throw new Error('Upload failed');
+      }
+
+      // 3. Save Metadata
+      await saveFileMetadata(clipboardId, sessionToken, {
+        id: fileId,
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        path: path,
+        url: publicUrl,
+        uploadedAt: new Date().toISOString()
+      });
+
+      // Success
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      onUploadComplete();
+    } catch (err: any) {
+      console.error('Upload error:', err);
+      setError(err.message || 'Failed to upload file');
+    } finally {
+      setUploading(false);
+    }
+  };
 
   return (
-    <div
-      {...getRootProps()}
-      className={clsx(
-        'flex cursor-pointer items-center justify-center gap-2 rounded-2xl border border-dashed border-white/15 bg-surface-900 px-3 py-6 text-sm text-text-muted',
-        isDragActive && 'border-accent-500/60 bg-accent-500/5',
-        props.disabled && 'cursor-not-allowed opacity-60'
+    <div className="mt-6 p-4 border border-dashed border-theme-border rounded-lg bg-theme-bg-secondary/50 text-center">
+      {error && (
+        <div className="mb-3 text-sm text-red-500 bg-red-500/10 p-2 rounded">
+          {error}
+        </div>
       )}
-    >
-      <input {...getInputProps()} aria-label="Upload files" />
-      <UploadCloud className="h-4 w-4" />
-      <span>{props.busy ? 'Uploading…' : props.disabled ? 'Uploads disabled' : 'Drag & drop or click to upload'}</span>
+
+      {uploading ? (
+        <div className="flex flex-col items-center justify-center py-4">
+          <div className="w-8 h-8 border-4 border-theme-primary border-t-transparent rounded-full animate-spin mb-2"></div>
+          <span className="text-theme-text-secondary text-sm">Uploading...</span>
+        </div>
+      ) : (
+        <div>
+           <input
+            type="file"
+            id="file-upload"
+            className="hidden"
+            onChange={handleFileChange}
+            ref={fileInputRef}
+            disabled={uploading}
+          />
+          <label
+            htmlFor="file-upload"
+            className="cursor-pointer inline-flex flex-col items-center"
+          >
+             <span className="text-2xl mb-2">☁️</span>
+             <span className="font-medium text-theme-primary hover:underline">Click to upload file</span>
+             <span className="text-xs text-theme-text-secondary mt-1">Max 150MB</span>
+          </label>
+        </div>
+      )}
     </div>
-  )
-}
+  );
+};
