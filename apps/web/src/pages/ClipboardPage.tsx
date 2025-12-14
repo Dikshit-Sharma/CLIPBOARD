@@ -16,6 +16,7 @@ import { QRCodeModal } from '../components/QRCodeModal'
 import { KeyboardShortcutsModal, useKeyboardShortcutHelp } from '../components/KeyboardShortcutsModal'
 import { AdUnit } from '../components/AdUnit'
 import { SEO } from '../components/SEO'
+import { Footer } from '../components/Footer'
 import { useAuth, getIdToken } from '../lib/auth'
 import { getStoredTokens } from '../lib/tokens'
 import { saveRecent, removeRecent } from '../lib/recent'
@@ -645,6 +646,7 @@ export function ClipboardPage() {
            <AdUnit slot="9527620124" format="horizontal" />
         </div>
       </div>
+      <Footer />
     </div>
   )
 }
@@ -725,24 +727,6 @@ function SettingsModal(props: {
         </div>
       </div>
     </Modal>
-
-    {/* Footer */}
-    <footer className="mt-16 text-center">
-      <div className="flex flex-col items-center gap-3">
-        <div className="inline-flex items-center gap-2 rounded-xl bg-surface-900/50 px-4 py-2 text-xs text-text-muted ring-1 ring-white/10">
-          <span>Developed by Dikshit Sharma</span>
-        </div>
-        <a
-          href="https://github.com/Dikshit-Sharma/CLIPBOARD"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 rounded-xl bg-surface-900/50 px-4 py-2 text-xs text-text-muted hover:text-text-primary hover:bg-surface-800/50 ring-1 ring-white/10 transition-all duration-200 hover:ring-white/20"
-        >
-          <Github className="h-4 w-4" />
-          <span>View on GitHub</span>
-        </a>
-      </div>
-    </footer>
   </>
 )
 }

@@ -6,6 +6,9 @@ import { ClipboardPage } from './pages/ClipboardPage'
 import { Dashboard } from './pages/Dashboard'
 import { Settings } from './pages/Settings'
 import { NotFound } from './pages/NotFound'
+import { About } from './pages/About'
+import { HowItWorks } from './pages/HowItWorks'
+import { UseCases } from './pages/UseCases'
 import { trackPageView } from './lib/analytics'
 import { AuthProvider } from './lib/auth'
 import { ThemeProvider } from './lib/theme'
@@ -31,6 +34,9 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
+      <Route path="/about" element={<About />} />
+      <Route path="/how-it-works" element={<HowItWorks />} />
+      <Route path="/use-cases" element={<UseCases />} />
       <Route path="/c/:id" element={<ClipboardPage />} />
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/settings" element={<Settings />} />
