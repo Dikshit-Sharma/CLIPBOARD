@@ -40,7 +40,7 @@ export function FeedbackModal({ open, onClose }: FeedbackModalProps) {
         setSuccess(true)
         if (data.simulated) {
           console.log('Email simulation:', data)
-          alert('Note: Email sending is simulated because SMTP credentials are not configured. Check the server console.')
+          alert('NOTICE: No email was sent! The server is in SIMULATION mode because SMTP credentials are missing. The email content was printed to the server console instead.')
         }
         setTimeout(() => {
           setSuccess(false)
