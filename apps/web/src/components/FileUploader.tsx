@@ -100,7 +100,7 @@ export const FileUploader: React.FC<FileUploaderProps> = ({ clipboardId, session
           >
              <span className="text-2xl mb-2">☁️</span>
              <span className="font-medium text-theme-primary hover:underline">Click to upload file</span>
-             <span className="text-xs text-theme-text-secondary mt-1">Max 150MB</span>
+             <span className="text-xs text-theme-text-secondary mt-1">Max 50MB</span>
           </label>
         </div>
       )}
