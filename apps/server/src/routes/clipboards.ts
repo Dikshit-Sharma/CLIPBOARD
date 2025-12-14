@@ -218,17 +218,31 @@ clipboardsRouter.post('/:id/files/presign', requireSession, async (req: Request,
   if (authed.session.clipboardId !== id) return res.status(403).json({ error: 'Forbidden' })
   if (authed.session.role !== 'write') return res.status(403).json({ error: 'Read-only' })
 
+  // Enforce User Authentication (via x-user-token header)
+  const userToken = req.headers['x-user-token'] as string | undefined
+  let requestUserId: string | null = null
+  if (userToken) {
+    try {
+      requestUserId = await verifyIdToken(userToken)
+    } catch {
+       return res.status(401).json({ error: 'Invalid user token' })
+    }
+  }
+
   const { name, type, size } = req.body
   if (!name || !type || !size) return res.status(400).json({ error: 'Missing file info' })
 
   // Limit 150MB
   if (size > 150 * 1024 * 1024) return res.status(400).json({ error: 'File too large (max 150MB)' })
 
-  const cb = await getClipboard(id)
-  if (!cb) return res.status(404).json({ error: 'Not found' })
-
-  // Only allow uploads for owned clipboards (registered users)
-  if (!cb.ownerId) return res.status(403).json({ error: 'Uploads require an account' })
+  // Get clipboard to check ownership if needed
+  // Note: We used to check !cb.ownerId. But now we allow any logged-in user to upload (as requested).
+  // "Logged in users should be able to upload ... based on permission provided"
+  // Permission provided = 'write' role (checked above).
+  // AND "Logged in".
+  if (!requestUserId) {
+    return res.status(403).json({ error: 'Uploads require an account' })
+  }
 
   try {
     const { url, path, publicUrl, token, fileId } = await generateUploadUrl(name, type)
@@ -244,6 +258,14 @@ clipboardsRouter.post('/:id/files', requireSession, async (req: Request, res: Re
   const id = req.params.id
   if (authed.session.clipboardId !== id) return res.status(403).json({ error: 'Forbidden' })
   if (authed.session.role !== 'write') return res.status(403).json({ error: 'Read-only' })
+
+  // Enforce User Authentication
+  const userToken = req.headers['x-user-token'] as string | undefined
+  try {
+     if(!userToken || !(await verifyIdToken(userToken))) throw new Error()
+  } catch {
+      return res.status(401).json({ error: 'Authentication required' })
+  }
 
   const body = req.body as ClipboardFile
 
@@ -268,6 +290,15 @@ clipboardsRouter.delete('/:id/files/:fileId', requireSession, async (req: Reques
 
   if (authed.session.clipboardId !== id) return res.status(403).json({ error: 'Forbidden' })
   if (authed.session.role !== 'write') return res.status(403).json({ error: 'Read-only' })
+
+  // Enforce User Authentication (Deletion)
+  // "Users who are not logged in ... should not have the permission to delete"
+  const userToken = req.headers['x-user-token'] as string | undefined
+  try {
+     if(!userToken || !(await verifyIdToken(userToken))) throw new Error()
+  } catch {
+      return res.status(401).json({ error: 'Deletion requires an account' })
+  }
 
   const cb = await getClipboard(id)
   if (!cb) return res.status(404).json({ error: 'Not found' })

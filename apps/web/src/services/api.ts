@@ -130,13 +130,16 @@ export async function deleteClipboard(id: string, sessionToken: string) {
   return (await res.json()) as { ok: true }
 }
 
-export async function presignUpload(id: string, sessionToken: string, file: { name: string; type: string; size: number }) {
+export async function presignUpload(id: string, sessionToken: string, file: { name: string; type: string; size: number }, userToken?: string) {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${sessionToken}`
+  }
+  if (userToken) headers['x-user-token'] = userToken
+
   const res = await fetch(joinUrl(API_BASE_URL, `/api/clipboards/${id}/files/presign`), {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${sessionToken}`
-    },
+    headers,
     body: JSON.stringify(file)
   })
 
@@ -153,23 +156,31 @@ export async function presignUpload(id: string, sessionToken: string, file: { na
   return (await res.json()) as { url: string; path: string; publicUrl: string; token?: string; fileId: string }
 }
 
-export async function saveFileMetadata(id: string, sessionToken: string, fileData: any) {
+export async function saveFileMetadata(id: string, sessionToken: string, fileData: any, userToken?: string) {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${sessionToken}`
+  }
+  if (userToken) headers['x-user-token'] = userToken
+
   const res = await fetch(joinUrl(API_BASE_URL, `/api/clipboards/${id}/files`), {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${sessionToken}`
-    },
+    headers,
     body: JSON.stringify(fileData)
   })
   if (!res.ok) throw new Error(await res.text())
   return await res.json()
 }
 
-export async function deleteFile(clipboardId: string, fileId: string, sessionToken: string) {
+export async function deleteFile(clipboardId: string, fileId: string, sessionToken: string, userToken?: string) {
+  const headers: Record<string, string> = {
+    Authorization: `Bearer ${sessionToken}`
+  }
+  if (userToken) headers['x-user-token'] = userToken
+
   const res = await fetch(joinUrl(API_BASE_URL, `/api/clipboards/${clipboardId}/files/${fileId}`), {
     method: 'DELETE',
-    headers: { Authorization: `Bearer ${sessionToken}` }
+    headers
   })
   if (!res.ok) throw new Error(await res.text())
   return await res.json()

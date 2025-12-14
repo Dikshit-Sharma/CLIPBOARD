@@ -1,6 +1,7 @@
 
 import React, { useState, useRef } from 'react';
 import { presignUpload, saveFileMetadata } from '../services/api';
+import { getIdToken } from '../lib/auth';
 
 interface FileUploaderProps {
   clipboardId: string;
@@ -26,12 +27,14 @@ export const FileUploader: React.FC<FileUploaderProps> = ({ clipboardId, session
     setError(null);
 
     try {
+      const userToken = (await getIdToken()) || undefined
+
       // 1. Get Presigned URL
       const { url, path, publicUrl, fileId } = await presignUpload(clipboardId, sessionToken, {
         name: file.name,
         type: file.type,
         size: file.size
-      });
+      }, userToken);
 
       // 2. Upload to Supabase Storage
       const uploadRes = await fetch(url, {
@@ -55,7 +58,7 @@ export const FileUploader: React.FC<FileUploaderProps> = ({ clipboardId, session
         path: path,
         url: publicUrl,
         uploadedAt: new Date().toISOString()
-      });
+      }, userToken);
 
       // Success
       if (fileInputRef.current) fileInputRef.current.value = '';

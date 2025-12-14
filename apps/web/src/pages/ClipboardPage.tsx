@@ -15,7 +15,7 @@ import { PresenceBar } from '../components/PresenceBar'
 import { QRCodeModal } from '../components/QRCodeModal'
 import { KeyboardShortcutsModal, useKeyboardShortcutHelp } from '../components/KeyboardShortcutsModal'
 import { AdUnit } from '../components/AdUnit'
-import { useAuth } from '../lib/auth'
+import { useAuth, getIdToken } from '../lib/auth'
 import { getStoredTokens } from '../lib/tokens'
 import { saveRecent, removeRecent } from '../lib/recent'
 import { getCachedState, setCachedState } from '../lib/cache'
@@ -423,7 +423,8 @@ export function ClipboardPage() {
                 onDelete={async (fileId) => {
                   if(!confirm('Delete this file?')) return
                   try {
-                    await deleteFile(id, fileId, sessionToken!)
+                    const userToken = (await getIdToken()) || undefined
+                    await deleteFile(id, fileId, sessionToken!, userToken)
                      if(id && sessionToken) {
                        getClipboardState(id, sessionToken).then(setState)
                      }
