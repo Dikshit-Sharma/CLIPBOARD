@@ -394,6 +394,15 @@ export function ClipboardPage() {
           </div>
         </Card>
 
+        {/* High RPM Ad Unit - In-Content */}
+        <div className="mt-6">
+           <AdUnit
+             slot="9527620124"
+             format="horizontal"
+             className="w-full overflow-hidden rounded-xl bg-surface-800/30 p-4 border border-white/5 flex justify-center"
+           />
+        </div>
+
         {/* Attachments Card */}
         <Card className="p-6 mt-6">
           <div className="flex items-center justify-between gap-2 mb-4 pb-4 border-b border-white/10">
@@ -470,8 +479,8 @@ export function ClipboardPage() {
           </Card>
 
 
-          {/* AdSense Unit - Sidebar */}
-          <Card className="p-4 overflow-hidden flex justify-center bg-surface-800/50">
+          {/* AdSense Unit - Sidebar (Sticky) */}
+          <Card className="p-4 overflow-hidden flex justify-center bg-surface-800/50 sticky top-6">
             <div className="text-xs text-text-muted mb-2 w-full text-center">Advertisement</div>
             <AdUnit slot="8406110148" format="rectangle" />
           </Card>

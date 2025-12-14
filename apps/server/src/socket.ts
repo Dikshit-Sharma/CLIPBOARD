@@ -94,7 +94,8 @@ export function attachSocket(server: http.Server) {
           contentHtml: cb.contentHtml,
           contentUpdatedAt: cb.contentUpdatedAt,
           activity: cb.activity,
-          settings: cb.settings
+          settings: cb.settings,
+          files: cb.files || []
         })
 
         socket.on('clipboard:content:update', async (msg: { html: string }) => {

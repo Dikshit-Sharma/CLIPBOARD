@@ -172,6 +172,11 @@ export function Home() {
           </div>
         </Card>
 
+        {/* High RPM Ad Unit - Middle of Page */}
+        <div className="col-span-full md:col-span-2 flex justify-center py-2">
+           <AdUnit slot="9527620124" format="horizontal" className="w-full max-w-[728px] rounded-xl bg-surface-800/30 p-2 border border-white/5" />
+        </div>
+
         {/* Recent Clipboards or Login Prompt */}
         {!loading && (
           user ? (
