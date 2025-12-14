@@ -15,6 +15,7 @@ import { PresenceBar } from '../components/PresenceBar'
 import { QRCodeModal } from '../components/QRCodeModal'
 import { KeyboardShortcutsModal, useKeyboardShortcutHelp } from '../components/KeyboardShortcutsModal'
 import { AdUnit } from '../components/AdUnit'
+import { SEO } from '../components/SEO'
 import { useAuth, getIdToken } from '../lib/auth'
 import { getStoredTokens } from '../lib/tokens'
 import { saveRecent, removeRecent } from '../lib/recent'
@@ -278,6 +279,11 @@ export function ClipboardPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6">
+      <SEO
+        title={metaQ.data?.title ? `${metaQ.data.title} - SharedClip` : "Shared Clipboard – View & Edit"}
+        description="View this shared clipboard. Auto-expiring, real-time collaboration."
+        canonical={window.location.href}
+      />
       {/* Enhanced Header */}
       <div className="mb-6 rounded-2xl bg-gradient-to-br from-surface-900/90 via-surface-800/80 to-surface-900/90 p-6 ring-1 ring-white/10 shadow-xl">
         <div className="flex flex-wrap items-center justify-between gap-4">

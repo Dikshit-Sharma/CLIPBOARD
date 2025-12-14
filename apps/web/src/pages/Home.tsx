@@ -12,6 +12,7 @@ import { useAuth } from '../lib/auth'
 import { AuthModal } from '../components/AuthModal'
 import { UserMenu } from '../components/UserMenu'
 import { AdUnit } from '../components/AdUnit'
+import { SEO } from '../components/SEO'
 
 
 export function Home() {
@@ -80,6 +81,11 @@ export function Home() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
+      <SEO
+        title="Online Shared Clipboard – Real-Time Clipboard with File Sharing"
+        description="Share text, images, and files instantly across devices without login. Valid for 24 hours or forever. Secure, fast, and free."
+        canonical="https://sharedclip.netlify.app"
+      />
       {/* Enhanced Header */}
       <header className="mb-12">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
