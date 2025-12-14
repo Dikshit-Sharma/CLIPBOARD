@@ -414,7 +414,7 @@ export function ClipboardPage() {
           {/* AdSense Unit - Sidebar */}
           <Card className="p-4 overflow-hidden flex justify-center bg-surface-800/50">
             <div className="text-xs text-text-muted mb-2 w-full text-center">Advertisement</div>
-            <AdUnit slot="1234567890" format="rectangle" />
+            <AdUnit slot="8406110148" format="rectangle" />
           </Card>
         </div>
       </div>
@@ -568,7 +568,7 @@ export function ClipboardPage() {
       <div className="mt-8 flex justify-center">
         <div className="w-full max-w-[728px] overflow-hidden rounded-xl bg-surface-800/30 p-4 border border-white/5">
              <div className="text-xs text-text-muted mb-2 w-full text-center">Advertisement</div>
-           <AdUnit slot="0987654321" format="horizontal" />
+           <AdUnit slot="9527620124" format="horizontal" />
         </div>
       </div>
     </div>
